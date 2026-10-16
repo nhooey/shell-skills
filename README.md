@@ -18,11 +18,12 @@ in git-skills.
 
 ## Skills
 
-| Skill                                                                                            | What it does                                                                                                       |
-| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| [`shell-hygiene-target-processes-by-pid`](skills/shell-hygiene-target-processes-by-pid/SKILL.md) | Signal only the PID you started or confirmed; no `pkill`, `killall`, `pgrep -f \| xargs kill` or port-based kills. |
-| [`shell-hygiene-delete-named-paths`](skills/shell-hygiene-delete-named-paths/SKILL.md)           | List, then delete the paths you created by name; no globs, unchecked variables or unseen `find -delete`.           |
-| [`shell-hygiene-no-machine-wide-changes`](skills/shell-hygiene-no-machine-wide-changes/SKILL.md) | Keep changes in the project; ask before `sudo`, global installs and upgrades, pruning, services and dotfiles.      |
+| Skill                                                                                                | What it does                                                                                                       |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [`shell-hygiene-target-processes-by-pid`](skills/shell-hygiene-target-processes-by-pid/SKILL.md)     | Signal only the PID you started or confirmed; no `pkill`, `killall`, `pgrep -f \| xargs kill` or port-based kills. |
+| [`shell-hygiene-delete-named-paths`](skills/shell-hygiene-delete-named-paths/SKILL.md)               | List, then delete the paths you created by name; no globs, unchecked variables or unseen `find -delete`.           |
+| [`shell-hygiene-no-machine-wide-changes`](skills/shell-hygiene-no-machine-wide-changes/SKILL.md)     | Keep changes in the project; ask before `sudo`, global installs and upgrades, pruning, services and dotfiles.      |
+| [`shell-hygiene-symbolic-permission-modes`](skills/shell-hygiene-symbolic-permission-modes/SKILL.md) | Write permissions as symbolic modes such as `ug+rw`, never octal numbers like `755`, which reset every bit.        |
 
 ## CC Safety Net rulebook
 
@@ -55,6 +56,7 @@ Package outputs:
 - `agent-skill-nhooey-shell-hygiene-target-processes-by-pid`
 - `agent-skill-nhooey-shell-hygiene-delete-named-paths`
 - `agent-skill-nhooey-shell-hygiene-no-machine-wide-changes`
+- `agent-skill-nhooey-shell-hygiene-symbolic-permission-modes`
 
 ## Development
 
