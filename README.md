@@ -24,6 +24,21 @@ in git-skills.
 | [`shell-hygiene-delete-named-paths`](skills/shell-hygiene-delete-named-paths/SKILL.md)           | List, then delete the paths you created by name; no globs, unchecked variables or unseen `find -delete`.           |
 | [`shell-hygiene-no-machine-wide-changes`](skills/shell-hygiene-no-machine-wide-changes/SKILL.md) | Keep changes in the project; ask before `sudo`, global installs and upgrades, pruning, services and dotfiles.      |
 
+## CC Safety Net rulebook
+
+[`.cc-safety-net/rules/shell-hygiene/rulebook.json`](.cc-safety-net/rules/shell-hygiene/rulebook.json)
+enforces these skills with
+[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net): it blocks
+`pkill`, `killall`, `xargs kill`, `rsync --delete`, recursive `chmod` / `chown`,
+Homebrew and global npm changes, Nix garbage collection, `docker ... prune`,
+service changes and `defaults write`, on top of CC Safety Net's built-in `rm`
+and `find -delete` rules. `sudo` can't be blocked from a rulebook, because CC
+Safety Net analyzes the command it wraps.
+
+```bash
+cc-safety-net rule add nhooey/shell-skills --only shell-hygiene --global
+```
+
 ## Install
 
 ```bash

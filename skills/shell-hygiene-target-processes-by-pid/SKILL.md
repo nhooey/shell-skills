@@ -75,6 +75,13 @@ Looking is fine: `pgrep -l <name>`, `ps aux | grep '[n]ame'` or
 the matching PIDs with their command lines and ask which, if any, to
 stop.
 
+## Enforcement
+
+This repo's [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net)
+rulebook, `.cc-safety-net/rules/shell-hygiene/rulebook.json`, blocks
+`pkill`, `killall` and `xargs kill`. A block reason tagged `[shell-hygiene/<rule>]` comes from it;
+take the alternative it names rather than working around it.
+
 ## When to apply
 
 - About to stop, restart or signal a process, or free a port.

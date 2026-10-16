@@ -53,6 +53,13 @@ whose configuration is managed declaratively (Nix, Home Manager, a
 dotfiles repo), the change belongs in that configuration, not in the
 live system.
 
+## Enforcement
+
+This repo's [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net)
+rulebook, `.cc-safety-net/rules/shell-hygiene/rulebook.json`, blocks
+recursive `chmod` / `chown`, Homebrew and global npm changes, Nix garbage collection, `docker ... prune`, service changes and `defaults write`. A block reason tagged `[shell-hygiene/<rule>]` comes from it;
+take the alternative it names rather than working around it.
+
 ## When to apply
 
 - About to install, upgrade or remove a tool outside the project.

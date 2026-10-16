@@ -1,0 +1,272 @@
+{
+  "rulebook_version": 1,
+  "name": "shell-hygiene",
+  "version": "1.0.0",
+  "description": "Blocks shell commands that reach past what the agent started or created: processes by pattern, and machine-wide installs, prunes, services and settings. Complements CC Safety Net's built-in rm and find rules. The why and the alternatives live in the shell-hygiene-* skills in nhooey/shell-skills. A rule whose block_args holds the command's own name blocks every call to it. Gaps: `sudo` is analyzed as a wrapper and can't be blocked here, `kill $(pgrep -f ...)` isn't caught, and `rm -rf \"$DIR\"/` with an empty variable is left to the skill.",
+  "author": "nhooey/shell-skills",
+  "allowed_commands": [
+    "pkill",
+    "killall",
+    "xargs",
+    "rsync",
+    "chmod",
+    "chown",
+    "brew",
+    "npm",
+    "nix-collect-garbage",
+    "nix",
+    "docker",
+    "launchctl",
+    "systemctl",
+    "defaults"
+  ],
+  "rules": [
+    {
+      "name": "pkill",
+      "command": "pkill",
+      "block_args": ["pkill", "-f", "--full"],
+      "reason": "Matches every process whose name or command line contains the pattern, the agent's own shell included. Kill the PID you started: `kill <pid>`.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "killall",
+      "command": "killall",
+      "block_args": ["killall", "-9", "-KILL", "-u", "-r"],
+      "reason": "Stops every process with that name in every session. Kill the PID you started: `kill <pid>`.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "xargs-kill",
+      "command": "xargs",
+      "block_args": ["kill", "pkill", "killall"],
+      "reason": "Kills whatever a search matched, such as whatever holds a port. Look with `lsof -i :<port>` or `pgrep -l`, then `kill <pid>` for your own process.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "rsync-delete",
+      "command": "rsync",
+      "block_args": [
+        "--delete",
+        "--del",
+        "--delete-before",
+        "--delete-during",
+        "--delete-delay",
+        "--delete-after",
+        "--delete-excluded"
+      ],
+      "reason": "Deletes every file in the destination that isn't in the source. Sync into a fresh directory, or ask the user after showing them `rsync -n --delete`'s list.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "chmod-recursive",
+      "command": "chmod",
+      "block_args": ["-R", "--recursive"],
+      "reason": "Changes permissions on a whole tree. Change the one file that needs it.",
+      "intent": "scope_down"
+    },
+    {
+      "name": "chown-recursive",
+      "command": "chown",
+      "block_args": ["-R", "--recursive"],
+      "reason": "Changes ownership of a whole tree. Change the one file that needs it.",
+      "intent": "scope_down"
+    },
+    {
+      "name": "brew-machine-wide",
+      "command": "brew",
+      "block_args": [
+        "upgrade",
+        "cleanup",
+        "autoremove",
+        "uninstall",
+        "install",
+        "reinstall"
+      ],
+      "reason": "Changes Homebrew tools every project uses. Use the project's dev shell or `nix shell`, or ask the user.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "brew-services",
+      "command": "brew",
+      "subcommand": "services",
+      "block_args": ["start", "stop", "restart", "run", "kill", "cleanup"],
+      "reason": "Changes services for every session. Run the service in the foreground for the task.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "npm-global",
+      "command": "npm",
+      "block_args": ["-g", "--global", "--location=global"],
+      "reason": "Changes global npm packages or config. Use `npx` or the project's dependencies.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "nix-collect-garbage",
+      "command": "nix-collect-garbage",
+      "block_args": ["nix-collect-garbage", "-d", "--delete-old"],
+      "reason": "Deletes store paths other projects and sessions use. Leave garbage collection to the user.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "nix-store-gc",
+      "command": "nix",
+      "subcommand": "store",
+      "block_args": ["gc", "delete"],
+      "reason": "Deletes store paths other projects and sessions use. Leave garbage collection to the user.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "docker-prune",
+      "command": "docker",
+      "block_args": ["prune"],
+      "reason": "Removes every unused container, image, volume or network, not just yours. Remove the ones you started, by id.",
+      "intent": "scope_down"
+    },
+    {
+      "name": "launchctl-change",
+      "command": "launchctl",
+      "block_args": [
+        "load",
+        "unload",
+        "bootstrap",
+        "bootout",
+        "enable",
+        "disable",
+        "kickstart",
+        "kill",
+        "stop",
+        "remove",
+        "submit",
+        "setenv",
+        "unsetenv"
+      ],
+      "reason": "Changes launchd services for every session. Run the process in the foreground for the task, or ask the user.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "systemctl-change",
+      "command": "systemctl",
+      "block_args": [
+        "start",
+        "stop",
+        "restart",
+        "reload",
+        "enable",
+        "disable",
+        "mask",
+        "unmask",
+        "kill",
+        "daemon-reload",
+        "isolate",
+        "set-environment"
+      ],
+      "reason": "Changes systemd services for every session. Run the process in the foreground for the task, or ask the user.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "defaults-write",
+      "command": "defaults",
+      "block_args": ["write", "delete", "import", "rename"],
+      "reason": "Changes macOS settings for every program. Ask the user, or put the setting in their declarative config.",
+      "intent": "manual_only"
+    }
+  ],
+  "tests": [
+    { "command": "pkill node", "expect": "blocked", "rule": "pkill" },
+    { "command": "pkill -f server", "expect": "blocked", "rule": "pkill" },
+    {
+      "command": "/usr/bin/pkill -f server",
+      "expect": "blocked",
+      "rule": "pkill"
+    },
+    { "command": "pgrep -l node", "expect": "allowed" },
+    { "command": "killall node", "expect": "blocked", "rule": "killall" },
+    { "command": "kill 12345", "expect": "allowed" },
+    {
+      "command": "lsof -ti :3000 | xargs kill",
+      "expect": "blocked",
+      "rule": "xargs-kill"
+    },
+    { "command": "lsof -i :3000", "expect": "allowed" },
+    {
+      "command": "rsync -a --delete src/ dst/",
+      "expect": "blocked",
+      "rule": "rsync-delete"
+    },
+    { "command": "rsync -a src/ dst/", "expect": "allowed" },
+    {
+      "command": "chmod -R 755 .",
+      "expect": "blocked",
+      "rule": "chmod-recursive"
+    },
+    { "command": "chmod +x script.sh", "expect": "allowed" },
+    {
+      "command": "chown -R me /usr/local",
+      "expect": "blocked",
+      "rule": "chown-recursive"
+    },
+    {
+      "command": "brew upgrade",
+      "expect": "blocked",
+      "rule": "brew-machine-wide"
+    },
+    {
+      "command": "brew install jq",
+      "expect": "blocked",
+      "rule": "brew-machine-wide"
+    },
+    { "command": "brew list", "expect": "allowed" },
+    {
+      "command": "brew services restart postgresql",
+      "expect": "blocked",
+      "rule": "brew-services"
+    },
+    {
+      "command": "npm install -g typescript",
+      "expect": "blocked",
+      "rule": "npm-global"
+    },
+    { "command": "npm install", "expect": "allowed" },
+    {
+      "command": "nix-collect-garbage -d",
+      "expect": "blocked",
+      "rule": "nix-collect-garbage"
+    },
+    {
+      "command": "nix-collect-garbage",
+      "expect": "blocked",
+      "rule": "nix-collect-garbage"
+    },
+    { "command": "nix store gc", "expect": "blocked", "rule": "nix-store-gc" },
+    { "command": "nix build .#default", "expect": "allowed" },
+    {
+      "command": "docker system prune -a",
+      "expect": "blocked",
+      "rule": "docker-prune"
+    },
+    {
+      "command": "docker volume prune",
+      "expect": "blocked",
+      "rule": "docker-prune"
+    },
+    { "command": "docker ps", "expect": "allowed" },
+    {
+      "command": "launchctl unload ~/Library/LaunchAgents/x.plist",
+      "expect": "blocked",
+      "rule": "launchctl-change"
+    },
+    { "command": "launchctl list", "expect": "allowed" },
+    {
+      "command": "systemctl restart nginx",
+      "expect": "blocked",
+      "rule": "systemctl-change"
+    },
+    { "command": "systemctl status nginx", "expect": "allowed" },
+    {
+      "command": "defaults write com.apple.dock autohide -bool true",
+      "expect": "blocked",
+      "rule": "defaults-write"
+    },
+    { "command": "defaults read com.apple.dock", "expect": "allowed" }
+  ]
+}

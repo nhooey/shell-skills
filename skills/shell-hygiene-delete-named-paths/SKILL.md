@@ -52,6 +52,13 @@ Show the listing (`ls`, `find -print`, `du -sh`), say how many files and
 how much space it covers, and delete only after they've seen it. "Clean
 up" means the paths you created, not the directory.
 
+## Enforcement
+
+This repo's [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net)
+rulebook, `.cc-safety-net/rules/shell-hygiene/rulebook.json`, blocks
+`rsync --delete`; CC Safety Net itself blocks `rm -rf` outside the working directory and `find -delete`. A block reason tagged `[shell-hygiene/<rule>]` comes from it;
+take the alternative it names rather than working around it.
+
 ## When to apply
 
 - About to run `rm`, `find -delete`, `rsync --delete`, or `mv` / `cp` onto
