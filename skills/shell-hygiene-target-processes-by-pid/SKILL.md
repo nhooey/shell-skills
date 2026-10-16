@@ -28,8 +28,8 @@ looks:
 - `lsof -ti :3000 | xargs kill` stops whatever holds the port, which may be
   the user's own dev server, not the one you started.
 
-The rule: **signal only a PID you started or have confirmed**, one at a
-time.
+The rule: **signal only a PID you started or have confirmed, written as
+a literal number**, one at a time.
 
 ## How to load this skill
 
@@ -38,14 +38,14 @@ stopped now — just that when one is, you'll target it by PID.
 
 ## Commands to avoid, and what to run instead
 
-| Avoid                                                   | What it reaches                                        | Run instead                                                       |
-| ------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------- |
-| `pkill <name>`, `pkill -f <pattern>`                    | every process matching, the agent's own shell included | `kill <pid>` for the PID you started                              |
-| `killall <name>`                                        | every process with that name, any user session         | `kill <pid>`                                                      |
-| `kill $(pgrep -f <pattern>)`, `pgrep ... \| xargs kill` | same as `pkill -f`                                     | `kill <pid>`                                                      |
-| `lsof -ti :<port> \| xargs kill`                        | whatever holds the port                                | `lsof -i :<port>` to see who holds it; stop it only if it's yours |
-| `kill -9 <pid>` as the first try                        | skips the process's cleanup                            | `kill <pid>` (TERM), then `-9` only if it ignores TERM            |
-| `kill -- -<pgid>`, `kill 0`                             | a whole process group                                  | `kill <pid>`                                                      |
+| Avoid                                                                                  | What it reaches                                        | Run instead                                                       |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------- |
+| `pkill <name>`, `pkill -f <pattern>`                                                   | every process matching, the agent's own shell included | `kill <pid>` for the PID you started                              |
+| `killall <name>`                                                                       | every process with that name, any user session         | `kill <pid>`                                                      |
+| `kill $(pgrep ...)`, `kill $(cat <pidfile>)`, `kill "$PID"`, `pgrep ... \| xargs kill` | an unseen PID, possibly reused or matching too much    | look first, then `kill <pid>` with the literal number             |
+| `lsof -ti :<port> \| xargs kill`                                                       | whatever holds the port                                | `lsof -i :<port>` to see who holds it; stop it only if it's yours |
+| `kill -9 <pid>` as the first try                                                       | skips the process's cleanup                            | `kill <pid>` (TERM), then `-9` only if it ignores TERM            |
+| `kill -- -<pgid>`, `kill 0`                                                            | a whole process group                                  | `kill <pid>`                                                      |
 
 ## Keep the PID when you start the process
 
@@ -58,15 +58,30 @@ A background command started through the agent's own tool usually
 returns a task or shell id; stop it through that tool rather than by
 searching for it.
 
-## Confirm before signalling
+## Look first, then kill the number
+
+Finding a process and signalling it are two separate commands. First
+look, which only reads:
 
 ```bash
-ps -o pid,ppid,user,etime,command -p "$(cat /tmp/my-server.pid)"
+cat /tmp/my-server.pid
+ps -o pid,ppid,user,etime,command -p 48213
 ```
 
-Signal it only when the command line and start time are the ones you
-launched. A recorded PID can be reused by an unrelated process once the
-original exits.
+Then, once the command line and start time are the ones you launched,
+signal that PID by its number:
+
+```bash
+kill 48213
+```
+
+`kill` never interprets its targets: every target is a literal PID
+number you have just looked at. No `$(cat my-server.pid)`, no
+`$(pgrep -f server)`, no backticks, no `"$PID"` variable, no
+`xargs kill`. Each of those signals a PID nobody saw, and a recorded PID
+can be reused by an unrelated process once the original exits. Claude
+Code deny rules may block any `kill` that contains `$` or a backtick for
+that reason.
 
 ## When you didn't start it
 
