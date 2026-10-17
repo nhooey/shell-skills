@@ -75,9 +75,9 @@ read-write, no access for group or other (`u=rw,go=`)", or quote
 
 ## Related skills
 
-Load each of these alongside this skill when it applies. If one isn't in
-your skill listing, tell the user which skill is missing and ask whether
-to install it from the same collection this skill came from; don't apply
-it from memory.
+When one of these applies and it's in your skill listing, load it
+without asking. If it isn't in your listing, tell the user which skill is
+missing and ask whether to install it from the same collection this skill
+came from; don't apply it from memory.
 
 - `shell-hygiene-no-machine-wide-changes`: recursive changes and permissions on paths outside the project.

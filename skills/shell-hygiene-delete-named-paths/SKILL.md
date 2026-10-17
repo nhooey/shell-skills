@@ -69,9 +69,9 @@ take the alternative it names rather than working around it.
 
 ## Related skills
 
-Load each of these alongside this skill when it applies. If one isn't in
-your skill listing, tell the user which skill is missing and ask whether
-to install it from the same collection this skill came from; don't apply
-it from memory.
+When one of these applies and it's in your skill listing, load it
+without asking. If it isn't in your listing, tell the user which skill is
+missing and ask whether to install it from the same collection this skill
+came from; don't apply it from memory.
 
 - `git-hygiene-avoid-sweeping-operations`: deletions git makes: `git clean`, `git restore .`, `git reset --hard`.
