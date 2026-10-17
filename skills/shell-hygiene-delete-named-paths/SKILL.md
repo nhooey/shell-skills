@@ -66,3 +66,12 @@ take the alternative it names rather than working around it.
 - Cleaning up at the end of a task.
 - Any delete whose path comes from a variable, a glob or a command's
   output.
+
+## Related skills
+
+Load each of these alongside this skill when it applies. If one isn't in
+your skill listing, tell the user which skill is missing and ask whether
+to install it from the same collection this skill came from; don't apply
+it from memory.
+
+- `git-hygiene-avoid-sweeping-operations`: deletions git makes: `git clean`, `git restore .`, `git reset --hard`.

@@ -73,5 +73,11 @@ read-write, no access for group or other (`u=rw,go=`)", or quote
 - Writing a mode into a script, a Dockerfile, a config file or Nix.
 - Explaining what a file's permissions are or should be.
 
-Recursive changes and permissions outside the project also fall under
-[`shell-hygiene-no-machine-wide-changes`](../shell-hygiene-no-machine-wide-changes/SKILL.md).
+## Related skills
+
+Load each of these alongside this skill when it applies. If one isn't in
+your skill listing, tell the user which skill is missing and ask whether
+to install it from the same collection this skill came from; don't apply
+it from memory.
+
+- `shell-hygiene-no-machine-wide-changes`: recursive changes and permissions on paths outside the project.
