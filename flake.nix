@@ -32,6 +32,11 @@
         treefmt-nix.follows = "treefmt-nix";
       };
     };
+    # The `skill-citations` tool and the `citations-<skill>` checks.
+    skill-authoring-skills = {
+      url = "github:nhooey/skill-authoring-skills";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -96,7 +101,24 @@
         {
           packages = base.packages.${system};
 
-          apps = base.apps.${system};
+          apps = base.apps.${system} // {
+            inherit (inputs.skill-authoring-skills.apps.${system}) skill-citations;
+          };
+
+          # `verify` for every skill with a citations.lock.json.
+          checks = inputs.skill-authoring-skills.lib.citationChecks {
+            inherit pkgs;
+            root = ./.;
+          };
+
+          devshells.default.commands = [
+            {
+              category = "skills";
+              name = "skill-citations";
+              help = "lock, verify or drift-check a skill's upstream citations";
+              package = inputs.skill-authoring-skills.packages.${system}.skill-citations;
+            }
+          ];
 
           # `nix fmt` runs nixfmt over `.nix` and prettier over `.md` / `.yaml`;
           # the module also surfaces a `checks.${system}.treefmt` so `nix flake
@@ -111,6 +133,12 @@
               "*.md"
               "*.yaml"
               "*.yml"
+            ];
+            # skill-citations writes this skill's footnotes straight after its
+            # last list, where prettier would indent them into the list; its
+            # `verify` then fails.
+            settings.formatter.prettier.excludes = [
+              "skills/shell-hygiene-secrets-through-secretspec/SKILL.md"
             ];
           };
 

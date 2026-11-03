@@ -9,8 +9,11 @@ description: |
   SecretSpec fails. Covers when a checkout needs a `secretspec.toml` and
   when the user's general `gh` token is enough, writing one (a
   least-privilege token per profile, write access never cached, 1Password
-  items by ID, a user-only alias for a public repo), and what to do when a
-  read is refused or 1Password doesn't answer. Apply whenever a command,
+  items by ID with their titles in the description, the user-global
+  provider aliases that keep the vault out of every project, the user
+  creating every credential, an SSH key loaded into a throwaway
+  ssh-agent), and what to do when a read is refused or 1Password doesn't
+  answer. Apply whenever a command,
   script or project needs a credential, a checkout has a
   `secretspec.toml`, a secret is about to go into an environment
   variable, file or dev shell, or a `secretspec` read fails.
@@ -34,6 +37,11 @@ to `~/.local/state/secretspec/audit.log` with its reason.
 The rule: **a secret reaches a command only through SecretSpec, with a
 reason, in that command's own environment, and goes nowhere else.**
 
+What this skill says about SecretSpec itself is read from
+`cachix/secretspec` at tag `v0.21.1`; each footnote cites the docs or
+source there, and the rules with no footnote are conventions, with their
+reasons beside them.
+
 ## How to load this skill
 
 Passive reference. Loading it doesn't mean a secret is needed now, just
@@ -55,8 +63,8 @@ secretspec get --file "$root/secretspec.toml" --profile apply \
 ```
 
 - **A reason on every read.** SecretSpec refuses an AI agent's read
-  without one (`Accessing secrets requires a reason`), and records it in
-  the audit log. Say what the command does and why, in a few words, with
+  without one (`Accessing secrets requires a reason`),[^require-reason]
+  and records it in the audit log.[^audit-reason] Say what the command does and why, in a few words, with
   no values: `"gh pr create in shell-skills"`, not `"need token"`. A
   script reads `SECRETSPEC_REASON` and falls back to a reason naming
   itself, so its caller can say more.
@@ -90,6 +98,42 @@ secretspec get --file "$root/secretspec.toml" --profile apply \
 Secrets in GitHub Actions come from the repository's settings on GitHub,
 not from SecretSpec on the user's machine; this skill doesn't cover them.
 
+## The user-global provider aliases
+
+SecretSpec reads a user-global config at `~/.config/secretspec/config.toml`,
+on macOS as well as Linux.[^global-path][^macos-path] Its
+`[defaults.providers]` table declares provider aliases that every
+project's manifest can name in a secret's `providers`,[^user-aliases] and
+an alias can carry a `cache`, a faster local store that answers until
+`max_age` runs out.[^alias-cache] Declare the 1Password vault there once,
+as two aliases, so no project holds its ID:
+
+```toml
+# ~/.config/secretspec/config.toml
+[defaults.providers.onepassword]
+uri = "onepassword://<vault-id>"
+cache = { provider = "keyring://", max_age = "8h" }
+
+[defaults.providers.onepassword-uncached]
+uri = "onepassword://<vault-id>"
+```
+
+| Alias                  | Cache                       | For                                                        |
+| ---------------------- | --------------------------- | ---------------------------------------------------------- |
+| `onepassword`          | login keychain, 8 hours     | read-only credentials, so 1Password asks about once a day  |
+| `onepassword-uncached` | none: 1Password asks always | credentials that can write, change settings or act as root |
+
+- **A project declares no `[providers]` of these names.** A project alias
+  of the same name wins over the user-global one,[^alias-precedence] so a
+  copy in a project keeps the vault ID there and stops following the
+  global one.
+- **Keep the file in the user's Home Manager config.** Generated, it is
+  a read-only link, and `secretspec config global init` and
+  `secretspec config global provider add`, which write
+  it,[^cli-writes-global] fail on it: change the config and switch. Ask
+  before changing it either way: it is the user's, shared by every
+  project.
+
 ## Writing a `secretspec.toml`
 
 ```toml
@@ -97,15 +141,11 @@ not from SecretSpec on the user's machine; this skill doesn't cover them.
 name = "github-config"
 revision = "1.0"
 
-[providers]
-onepassword = { uri = "onepassword://<vault-id>", cache = { provider = "keyring://", max_age = "8h" } }
-onepassword-uncached = { uri = "onepassword://<vault-id>" }
-
 [profiles.default]
-GITHUB_TOKEN = { description = "Fine-grained token: Administration and Contents read-only", required = true, providers = ["onepassword"], ref = { item = "<item-id>", field = "token" } }
+GITHUB_TOKEN = { description = "Fine-grained token: Administration and Contents read-only (1Password: GitHub Token (FGPAT): github-config-plan)", required = true, providers = ["onepassword"], ref = { item = "<item-id>", field = "token" } }
 
 [profiles.apply]
-GITHUB_TOKEN = { description = "Fine-grained token: Administration read and write", required = true, providers = ["onepassword-uncached"], ref = { item = "<item-id>", field = "token" } }
+GITHUB_TOKEN = { description = "Fine-grained token: Administration read and write (1Password: GitHub Token (FGPAT): github-config-apply)", required = true, providers = ["onepassword-uncached"], ref = { item = "<item-id>", field = "token" } }
 ```
 
 - **Least privilege.** One fine-grained token per project, scoped to what
@@ -117,17 +157,42 @@ GITHUB_TOKEN = { description = "Fine-grained token: Administration read and writ
 - **Write access is never cached.** A profile that can change things uses
   a provider with no `cache`, so the user approves every read; a
   read-only profile may cache, for hours rather than days.
-- **1Password items by ID.** Vault and item IDs keep the manifest working
-  when the user renames either.
-- **Commit it.** The manifest names secrets, not values. In a public
-  repository, keep the user's own vault and items out of it: name a
-  user-only alias, `[defaults] providers = ["developer"]`, and let each
-  user define `developer` under `[defaults.providers]` in
-  `~/.config/secretspec/config.toml`. Ask before editing that file: it is
-  the user's, shared by every project.
+- **1Password items by ID**, so renaming the item doesn't break the
+  manifest. The vault comes from the alias's URI, which names a vault
+  only.[^uri-vault-only]
+- **The item's title in `description`**, after `1Password:`, so a reader
+  finds the item without a lookup.
+- **The field by its label**, such as `token` or `private key`. Without
+  `field`, SecretSpec reads the item's value or password
+  field.[^ref-field]
+- **Commit it.** The manifest names secrets and item IDs, not values or
+  the vault.
+- **The user creates every credential.** SecretSpec never creates an
+  item through a `ref`,[^ref-no-create] and an agent doesn't either, with
+  `op` or otherwise. The user makes the item in 1Password, an SSH key
+  with **New Item, SSH Key, Generate** or
+  `op item create --category "SSH Key" --ssh-generate-key ed25519` in
+  their own terminal; the agent then finds its ID with `op item list`,
+  which shows no values, and writes the `ref`.
 - **`secretspec` from `PATH`.** A keychain cache entry trusts only the
   `secretspec` build that wrote it, so a project that packages its own
   build makes macOS ask again. Use the one on `PATH`.
+
+## An SSH private key
+
+1Password returns an SSH Key item's `private key` field in PKCS#8 form,
+which `ssh-add` reads as it is. Load it into a throwaway agent that ends
+with the script, so no key file is left behind:
+
+```bash
+eval "$(ssh-agent -s)" >/dev/null
+trap 'ssh-agent -k >/dev/null' EXIT
+secretspec get --reason "router-ssh: log in to the router" ROUTER_SSH_KEY | ssh-add -q -
+ssh root@192.168.8.1
+```
+
+The public key goes on the server: `op item get <item-id> --fields "public key"`
+prints it, and it is safe to show.
 
 ## When a read fails
 
@@ -160,3 +225,14 @@ missing and ask whether to install it from the same collection this skill
 came from; don't apply it from memory.
 
 - `shell-hygiene-no-machine-wide-changes`: editing `~/.config/secretspec/config.toml` or other configuration shared by every project.
+[^alias-cache]: [caching.mdx line 34, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/concepts/providers/caching.mdx?plain=1#L34-L34), unchanged since v0.20.0
+[^alias-precedence]: [providers.mdx line 195, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/concepts/providers.mdx?plain=1#L195-L195), unchanged since v0.18.0
+[^audit-reason]: [audit.md line 79, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/concepts/audit.md?plain=1#L79-L79), unchanged since v0.12.0
+[^cli-writes-global]: [providers.mdx line 247, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/concepts/providers.mdx?plain=1#L247-L247), unchanged since v0.18.0
+[^global-path]: [config.rs line 2925, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/secretspec/src/config.rs#L2925-L2925), unchanged since v0.7.2
+[^macos-path]: [config.rs line 2978, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/secretspec/src/config.rs#L2978-L2978), unchanged since v0.7.2
+[^ref-field]: [onepassword.mdx line 165, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/providers/onepassword.mdx?plain=1#L165-L165), unchanged since v0.18.0
+[^ref-no-create]: [onepassword.mdx line 173, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/providers/onepassword.mdx?plain=1#L173-L173), unchanged since v0.18.0
+[^require-reason]: [configuration.mdx line 83, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/reference/configuration.mdx?plain=1#L83-L83), unchanged since v0.20.0
+[^uri-vault-only]: [onepassword.mdx line 120, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/providers/onepassword.mdx?plain=1#L120-L120), unchanged since v0.18.0
+[^user-aliases]: [providers.mdx line 191, v0.21.1](https://github.com/cachix/secretspec/blob/v0.21.1/docs/src/content/docs/concepts/providers.mdx?plain=1#L191-L191), unchanged since v0.18.0

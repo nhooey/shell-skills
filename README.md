@@ -65,5 +65,5 @@ Package outputs:
 ```bash
 nix develop      # enter the dev shell; run `menu` to list commands
 nix fmt          # nixfmt over *.nix, prettier over *.md / *.yaml
-nix flake check  # runs the treefmt check (fails on any unformatted file)
+nix flake check  # the treefmt check, and `skill-citations verify` for each skill with citations
 ```

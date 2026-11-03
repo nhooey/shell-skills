@@ -1,0 +1,27 @@
+;; Spans of cachix/secretspec this skill cites. Lock and check with the
+;; skill-citations tool from nhooey/skill-authoring-skills, in the dev
+;; shell; `nix flake check` runs verify:
+;;
+;;   skill-citations lock  skills/shell-hygiene-secrets-through-secretspec
+;;   skill-citations drift skills/shell-hygiene-secrets-through-secretspec --to latest
+{:source {:repo "cachix/secretspec"
+          :tag "v0.21.1"
+          :watch ["docs/src/content/docs/concepts/providers.mdx"
+                  "docs/src/content/docs/concepts/providers/caching.mdx"
+                  "docs/src/content/docs/providers/onepassword.mdx"
+                  "docs/src/content/docs/reference/configuration.mdx"
+                  "docs/src/content/docs/concepts/audit.md"
+                  "secretspec/src/config.rs"]}
+
+ :cite
+ [{:id "global-path" :path "secretspec/src/config.rs" :line "Ok(strategy.config_dir().join(\"config.toml\"))"}
+  {:id "macos-path" :path "secretspec/src/config.rs" :line "/// to the XDG location (~/.config/secretspec/)."}
+  {:id "user-aliases" :path "docs/src/content/docs/concepts/providers.mdx" :line "- Define user aliases in `[defaults.providers]` in"}
+  {:id "alias-precedence" :path "docs/src/content/docs/concepts/providers.mdx" :line "If both scopes define the same alias, the project alias takes precedence."}
+  {:id "cli-writes-global" :path "docs/src/content/docs/concepts/providers.mdx" :line "These commands modify only"}
+  {:id "alias-cache" :path "docs/src/content/docs/concepts/providers/caching.mdx" :line "Add `cache` to the remote provider alias"}
+  {:id "uri-vault-only" :path "docs/src/content/docs/providers/onepassword.mdx" :line "The URI names a vault only"}
+  {:id "ref-field" :path "docs/src/content/docs/providers/onepassword.mdx" :line "- `field`: the field label."}
+  {:id "ref-no-create" :path "docs/src/content/docs/providers/onepassword.mdx" :line "Items are never"}
+  {:id "require-reason" :path "docs/src/content/docs/reference/configuration.mdx" :line "(default) | Require a reason only when"}
+  {:id "audit-reason" :path "docs/src/content/docs/concepts/audit.md" :line "The reason supplied via"}]}
