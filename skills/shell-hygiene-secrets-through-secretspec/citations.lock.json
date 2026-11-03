@@ -1,0 +1,93 @@
+{
+  "repo": "cachix/secretspec",
+  "tag": "v0.21.1",
+  "commit": "5a8927d2b800c604fee72970ffbd137c57820fd5",
+  "files": {
+    "secretspec/src/config.rs": "5181a217182c4b0e8a8b232553b643787cefc4bb2841e64ade35d56f512bfc1c",
+    "docs/src/content/docs/concepts/providers.mdx": "2f70fdab04e57cbf99e58f6070d41cb29dc86cbe97e9da99198601845d90ce5b",
+    "docs/src/content/docs/concepts/providers/caching.mdx": "05ce162ff4e9d8c597cbb77684f28c98532e185fa492796bea16a54aa3e094d0",
+    "docs/src/content/docs/providers/onepassword.mdx": "35616715b34712afc70b98c9b1f6f03d19239b0e993bd4a103b4f900b7737c90",
+    "docs/src/content/docs/reference/configuration.mdx": "613669a3a02c918ba05bb5edd6e451281dbcc1d341c7e6731ccefb9cb00fdc67",
+    "docs/src/content/docs/concepts/audit.md": "33001effe7d7b0045c36826690e6d2d198201932e4c284728b0f2b8f7d963673"
+  },
+  "citations": {
+    "cli-writes-global": {
+      "path": "docs/src/content/docs/concepts/providers.mdx",
+      "lines": [247, 247],
+      "sha256": "312fc8fd9f33fa0173ddd4ee67f1ce8b1866a393688a451b96451d5922baf76f",
+      "since": "v0.18.0",
+      "differs": []
+    },
+    "require-reason": {
+      "path": "docs/src/content/docs/reference/configuration.mdx",
+      "lines": [83, 83],
+      "sha256": "4fb9a8bc0355b06c6d649ad87c3874deeabc3a9b274b0d4e708c571986b3698e",
+      "since": "v0.20.0",
+      "differs": []
+    },
+    "macos-path": {
+      "path": "secretspec/src/config.rs",
+      "lines": [2978, 2978],
+      "sha256": "3f9a98e8fe5fa2c21e72148dce597c3e2a76a727ae844fb228e3d60fa77cd9e1",
+      "since": "v0.7.2",
+      "differs": []
+    },
+    "uri-vault-only": {
+      "path": "docs/src/content/docs/providers/onepassword.mdx",
+      "lines": [120, 120],
+      "sha256": "ca230effcaa8a52fa7dd43bc8be2ca8b6d4ffd96ddb196f8e3d2a83e7994a395",
+      "since": "v0.18.0",
+      "differs": []
+    },
+    "audit-reason": {
+      "path": "docs/src/content/docs/concepts/audit.md",
+      "lines": [79, 79],
+      "sha256": "e13b3ad73bf47eb005ccb15de9943ca185ce0249ed265884527bd0739c06bd2f",
+      "since": "v0.12.0",
+      "differs": []
+    },
+    "alias-precedence": {
+      "path": "docs/src/content/docs/concepts/providers.mdx",
+      "lines": [195, 195],
+      "sha256": "8886d3311d975ae9801172c4f48ae5caf2b1ecc051919f9adc74a9ef3f8f54a5",
+      "since": "v0.18.0",
+      "differs": []
+    },
+    "ref-field": {
+      "path": "docs/src/content/docs/providers/onepassword.mdx",
+      "lines": [165, 165],
+      "sha256": "0e0745c4c2293a69d06ca95ecea5f0cc74108ab77a05abcca6327a823b0c6f20",
+      "since": "v0.18.0",
+      "differs": []
+    },
+    "alias-cache": {
+      "path": "docs/src/content/docs/concepts/providers/caching.mdx",
+      "lines": [34, 34],
+      "sha256": "fe24b2e555c68f9ed96260dbb4354c51e2bc8524f255307b784770a2ddd8900a",
+      "since": "v0.20.0",
+      "differs": []
+    },
+    "user-aliases": {
+      "path": "docs/src/content/docs/concepts/providers.mdx",
+      "lines": [191, 191],
+      "sha256": "9fe7aef59bd6f4b4890165c4671fc53b3455488e61d5979f731ae961ad20cd47",
+      "since": "v0.18.0",
+      "differs": []
+    },
+    "global-path": {
+      "path": "secretspec/src/config.rs",
+      "lines": [2925, 2925],
+      "sha256": "a5594467ba29f8f6e61c664575e185861cb5cbbbdff8d695ced840fc628ddac7",
+      "since": "v0.7.2",
+      "differs": []
+    },
+    "ref-no-create": {
+      "path": "docs/src/content/docs/providers/onepassword.mdx",
+      "lines": [173, 173],
+      "sha256": "c8a9daacebb08ca587a5d9e56f075bf1277031e27a51fa8127af3492e60288e0",
+      "since": "v0.18.0",
+      "differs": []
+    }
+  },
+  "observed": {}
+}
