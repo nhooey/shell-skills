@@ -1,20 +1,14 @@
 ---
 name: shell-hygiene-no-machine-wide-changes
-description: |
-  Keep changes inside the project. Ask before anything that changes the
-  machine for every project and user: `sudo`, recursive `chmod` / `chown`
-  outside the project, `brew upgrade` / `brew cleanup`, `npm -g` /
-  `pip install` outside a virtualenv, `nix-collect-garbage -d`,
-  `docker system prune`, `launchctl` / `systemctl`, `defaults write`, and
-  edits to dotfiles or shell profiles. Use the project-local alternative:
-  a dev shell, a virtualenv, a project config file. Apply whenever a
-  command reaches outside the current project.
+description: Keep changes inside the project, and ask before anything that changes the machine for every project and user. Covers `sudo`, recursive `chmod` and `chown` outside the project, Homebrew installs, upgrades and cleanups, `npm -g`, `pip install` outside a virtualenv, `cargo install`, Nix garbage collection, `docker ... prune`, `launchctl`, `systemctl` and `brew services`, `defaults write` and `git config --global`, and edits to dotfiles or shell profiles, with the project-local alternative for each (a dev shell, a virtualenv, a project config file) and how to ask when the machine-wide change is really needed. Use whenever a command reaches outside the current project.
 tags: [safety]
 allowed-tools:
   - Bash
 ---
 
-# shell-hygiene-no-machine-wide-changes
+# No machine-wide changes
+
+_Change only the project; ask before anything machine-wide._
 
 Some commands change state that every project, session and user on the
 machine shares: installed packages, caches, services, permissions and
@@ -22,14 +16,6 @@ dotfiles. The task in front of you rarely needs that, and the change
 outlives it. An upgrade breaks another project's pinned tool, a prune
 deletes the cache a different session is building against, a dotfile
 edit changes every shell the user opens.
-
-The rule: **change only the project; ask before anything machine-wide.**
-
-## How to load this skill
-
-Passive reference. Loading it doesn't mean the user wants the machine
-changed now — just that when a command reaches past the project, you'll
-stop and ask.
 
 ## Commands to ask about first, and what to use instead
 
@@ -55,10 +41,14 @@ live system.
 
 ## Enforcement
 
-This repo's [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net)
-rulebook, `.cc-safety-net/rules/shell-hygiene/rulebook.json`, blocks
-recursive `chmod` / `chown`, Homebrew and global npm changes, Nix garbage collection, `docker ... prune`, service changes and `defaults write`. A block reason tagged `[shell-hygiene/<rule>]` comes from it;
-take the alternative it names rather than working around it.
+The `shell-hygiene` rulebook for
+[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net), in the
+collection this skill came from, blocks recursive `chmod` and `chown`,
+Homebrew and global npm changes, Nix garbage collection, `docker ... prune`,
+service changes and `defaults write`. It can't block `sudo`, because CC
+Safety Net analyzes the command `sudo` wraps. A block reason tagged
+`[shell-hygiene/<rule>]` comes from that rulebook; take the alternative it
+names rather than working around it.
 
 ## When to apply
 
