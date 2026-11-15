@@ -25,6 +25,7 @@ in git-skills.
 | [`shell-hygiene-no-machine-wide-changes`](skills/shell-hygiene-no-machine-wide-changes/SKILL.md)       | Keep changes in the project; ask before `sudo`, global installs and upgrades, pruning, services and dotfiles.      |
 | [`shell-hygiene-symbolic-permission-modes`](skills/shell-hygiene-symbolic-permission-modes/SKILL.md)   | Write permissions as symbolic modes such as `ug+rw`, never octal numbers like `755`, which reset every bit.        |
 | [`shell-hygiene-secrets-through-secretspec`](skills/shell-hygiene-secrets-through-secretspec/SKILL.md) | Read secrets through SecretSpec with a reason, into one command's environment; never into files or the dev shell.  |
+| [`shell-hygiene-commands-as-cli-tools`](skills/shell-hygiene-commands-as-cli-tools/SKILL.md)           | A command run twice becomes a committed tool with commands, options and a dev shell entry; documents name it.      |
 
 ## CC Safety Net rulebook
 
@@ -59,6 +60,7 @@ Package outputs:
 - `agent-skill-nhooey-shell-hygiene-no-machine-wide-changes`
 - `agent-skill-nhooey-shell-hygiene-symbolic-permission-modes`
 - `agent-skill-nhooey-shell-hygiene-secrets-through-secretspec`
+- `agent-skill-nhooey-shell-hygiene-commands-as-cli-tools`
 
 ## Development
 
