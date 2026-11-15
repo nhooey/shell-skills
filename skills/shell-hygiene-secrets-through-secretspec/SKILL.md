@@ -1,28 +1,15 @@
 ---
 name: shell-hygiene-secrets-through-secretspec
-description: |
-  Read every secret a command needs (a token, API key or password)
-  through SecretSpec at the moment of use, with a reason: `secretspec get
-  --reason "…" KEY` into one process's environment, or `secretspec run`.
-  Never write a secret to a file, a `.env`, the dev shell, a command's
-  arguments, a log or the reply, and never fetch it another way when
-  SecretSpec fails. Covers when a checkout needs a `secretspec.toml` and
-  when the user's general `gh` token is enough, writing one (a
-  least-privilege token per profile, write access never cached, 1Password
-  items by ID with their titles in the description, the user-global
-  provider aliases that keep the vault out of every project, the user
-  creating every credential, an SSH key loaded into a throwaway
-  ssh-agent), and what to do when a read is refused or 1Password doesn't
-  answer. Apply whenever a command,
-  script or project needs a credential, a checkout has a
-  `secretspec.toml`, a secret is about to go into an environment
-  variable, file or dev shell, or a `secretspec` read fails.
+description: Read every secret a command needs (a token, API key or password) through SecretSpec at the moment of use, with a reason, `secretspec get --reason "…" KEY` into one process's environment or `secretspec run`, and never write it to a file, a `.env`, the dev shell, a command's arguments, a log or the reply, or fetch it another way when SecretSpec fails. Covers when a checkout needs a `secretspec.toml` and when the user's general `gh` token is enough, writing one (a least-privilege token per profile, write access never cached, 1Password items by ID with their titles in the description, the user-global provider aliases that keep the vault out of every project, the user creating every credential, an SSH key loaded into a throwaway ssh-agent), and what to do when a read is refused or 1Password doesn't answer. Use whenever a command, script or project needs a credential, a checkout has a `secretspec.toml`, a secret is about to go into an environment variable, file or dev shell, or a `secretspec` read fails.
 tags: [safety]
 allowed-tools:
   - Bash
 ---
 
-# shell-hygiene-secrets-through-secretspec
+# Secrets through SecretSpec
+
+_A secret reaches a command only through SecretSpec, with a reason, in
+that command's own environment, and goes nowhere else._
 
 A secret written anywhere outlives the command that needed it. A `.env`
 file is read by every tool in the checkout and copied into backups; a
@@ -34,18 +21,10 @@ needs in a committed `secretspec.toml`, and read each one from the user's
 store, such as 1Password, only when a command runs. Each read is logged
 to `~/.local/state/secretspec/audit.log` with its reason.
 
-The rule: **a secret reaches a command only through SecretSpec, with a
-reason, in that command's own environment, and goes nowhere else.**
-
 What this skill says about SecretSpec itself is read from
 `cachix/secretspec` at tag `v0.21.1`; each footnote cites the docs or
 source there, and the rules with no footnote are conventions, with their
 reasons beside them.
-
-## How to load this skill
-
-Passive reference. Loading it doesn't mean a secret is needed now, just
-that when one is, you'll read it this way.
 
 ## Reading a secret
 
@@ -64,10 +43,10 @@ secretspec get --file "$root/secretspec.toml" --profile apply \
 
 - **A reason on every read.** SecretSpec refuses an AI agent's read
   without one (`Accessing secrets requires a reason`),[^require-reason]
-  and records it in the audit log.[^audit-reason] Say what the command does and why, in a few words, with
-  no values: `"gh pr create in shell-skills"`, not `"need token"`. A
-  script reads `SECRETSPEC_REASON` and falls back to a reason naming
-  itself, so its caller can say more.
+  and records it in the audit log.[^audit-reason] Say what the command
+  does and why, in a few words, with no values:
+  `"gh pr create in shell-skills"`, not `"need token"`. A script reads `SECRETSPEC_REASON`
+  and falls back to a reason naming itself, so its caller can say more.
 - **Into the environment, never the arguments.** Pass the value as an
   environment variable of the command that uses it. `--token "$TOKEN"`
   puts it in `ps` and in history.
