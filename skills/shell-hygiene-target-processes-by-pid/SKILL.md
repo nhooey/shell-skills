@@ -1,20 +1,15 @@
 ---
 name: shell-hygiene-target-processes-by-pid
-description: |
-  Never find or stop processes by pattern: no `pkill`, `killall`,
-  `pgrep -f <word> | xargs kill`, `kill $(pgrep ...)`, or
-  `lsof -ti :<port> | xargs kill`. A pattern matches the agent's own shell,
-  other agents' sessions and the user's programs along with the one process
-  meant. Keep the PID of what you started, confirm it with
-  `ps -o pid,ppid,command -p <pid>`, and signal that PID only. Apply
-  whenever about to stop, restart, signal or look up a process, or free a
-  port.
+description: Signal only a process whose PID you started or confirmed, written as a literal number, never processes found by pattern, because a pattern matches the agent's own shell, other agents' sessions and the user's programs along with the one process meant. Covers what to run instead of `pkill`, `killall`, `pgrep -f <word> | xargs kill`, `kill $(pgrep ...)` and `lsof -ti :<port> | xargs kill`, keeping the PID when you start a process, confirming it with `ps -o pid,ppid,command -p <pid>` before `kill <pid>`, TERM before `-9`, and asking the user about a process you didn't start. Use whenever about to stop, restart, signal or look up a process, or free a port.
 tags: [safety]
 allowed-tools:
   - Bash
 ---
 
-# shell-hygiene-target-processes-by-pid
+# Target processes by PID
+
+_Signal only a PID you started or have confirmed, written as a literal
+number, one at a time._
 
 A process pattern matches every process whose name or command line
 contains it, not the one you mean. On a machine where the user runs
@@ -27,14 +22,6 @@ looks:
   Node program the user has open.
 - `lsof -ti :3000 | xargs kill` stops whatever holds the port, which may be
   the user's own dev server, not the one you started.
-
-The rule: **signal only a PID you started or have confirmed, written as
-a literal number**, one at a time.
-
-## How to load this skill
-
-Passive reference. Loading it doesn't mean the user wants a process
-stopped now — just that when one is, you'll target it by PID.
 
 ## Commands to avoid, and what to run instead
 
@@ -50,11 +37,12 @@ stopped now — just that when one is, you'll target it by PID.
 ## Keep the PID when you start the process
 
 ```bash
-my-server --port 3000 > /tmp/my-server.log 2>&1 &
-echo $! > /tmp/my-server.pid        # or note it in your working state
+my-server --port 3000 > "$scratch/my-server.log" 2>&1 &
+echo $! > "$scratch/my-server.pid"  # or note it in your working state
 ```
 
-A background command started through the agent's own tool usually
+`$scratch` stands for the session's scratch directory, where
+`shell-hygiene-delete-named-paths` keeps temporary files. A background command started through the agent's own tool usually
 returns a task or shell id; stop it through that tool rather than by
 searching for it.
 
@@ -64,7 +52,7 @@ Finding a process and signalling it are two separate commands. First
 look, which only reads:
 
 ```bash
-cat /tmp/my-server.pid
+cat "$scratch/my-server.pid"
 ps -o pid,ppid,user,etime,command -p 48213
 ```
 
@@ -92,13 +80,24 @@ stop.
 
 ## Enforcement
 
-This repo's [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net)
-rulebook, `.cc-safety-net/rules/shell-hygiene/rulebook.json`, blocks
-`pkill`, `killall` and `xargs kill`. A block reason tagged `[shell-hygiene/<rule>]` comes from it;
-take the alternative it names rather than working around it.
+The `shell-hygiene` rulebook for
+[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net), in the
+collection this skill came from, blocks `pkill`, `killall` and `xargs kill`.
+It doesn't catch `kill $(pgrep -f ...)`, so that one is left to you. A block
+reason tagged `[shell-hygiene/<rule>]` comes from that rulebook; take the
+alternative it names rather than working around it.
 
 ## When to apply
 
 - About to stop, restart or signal a process, or free a port.
 - Cleaning up servers, watchers or test runs at the end of a task.
 - A command hangs and you want to stop it.
+
+## Related skills
+
+When one of these applies and it's in your skill listing, load it
+without asking. If it isn't in your listing, tell the user which skill is
+missing and ask whether to install it from the same collection this skill
+came from; don't apply it from memory.
+
+- `shell-hygiene-delete-named-paths`: keeping temporary files such as a PID file in the session's scratch directory, and deleting them by name.
