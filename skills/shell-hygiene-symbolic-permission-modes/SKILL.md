@@ -38,6 +38,11 @@ change: it adds execute only to directories and to files already
 executable by someone, so directories stay traversable and plain files
 don't become executable.
 
+The `shell-hygiene` rulebook for
+[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net), in the
+collection this skill came from, blocks `chmod` with a common numeric mode,
+such as `755` or `0644`.
+
 ## Where numbers appear outside a shell
 
 Use the symbolic form wherever the tool takes one: `install -m`,
