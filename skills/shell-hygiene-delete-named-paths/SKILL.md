@@ -1,6 +1,6 @@
 ---
 name: shell-hygiene-delete-named-paths
-description: Delete only the paths you created, by name, after listing what will go. No deleting by glob, unchecked variable or whole tree: no `rm -rf "$DIR"/` with `$DIR` possibly empty, `rm -rf *`, `rm -rf ~/...`, `find ... -delete` or `-exec rm` without a listing first, `rsync --delete` into a directory you didn't create, or `mv`, `cp` or `>` over a file already there. Covers the narrower command for each, keeping temporary files in the session's scratch directory, moving an agent's own ad-hoc deletes on macOS to the Trash with `/usr/bin/trash` (never in repository code), and showing the user a broad delete before running it. Use whenever about to remove, overwrite or move files or directories.
+description: Delete only the paths you created, by name, after listing what will go. No deleting by glob, unchecked variable or whole tree: no `rm -rf "$DIR"/` with `$DIR` possibly empty, `rm -rf *`, `rm -rf ~/...`, `find ... -delete` or `-exec rm` without a listing first, `rsync --delete` into a directory you didn't create, or `mv`, `cp` or `>` over a file already there. Covers the narrower command for each, keeping temporary files in the session's scratch directory, and showing the user a broad delete before running it. Use whenever about to remove, overwrite or move files or directories.
 tags: [safety]
 allowed-tools:
   - Bash
@@ -39,32 +39,6 @@ Put temporary files in the session's scratch directory, or one directory
 you `mktemp -d` and record. Cleaning up is then `rm -rf` of that one
 recorded path, not a search.
 
-## Ad-hoc deletes go to the Trash on macOS
-
-When you delete something yourself on macOS, as cleanup during a session
-rather than in code, move the named paths to the Trash, so the user can
-still recover them:
-
-```bash
-/usr/bin/trash --verbose --stopOnError build/old-report.html notes.tmp
-```
-
-Don't use `rm` for these, and don't move files into `~/.Trash` by hand.
-List first and name each path, as for any other delete.
-
-Use `rm` on the named paths instead, and say which reason applies, when:
-
-- **Space has to be reclaimed now:** large build outputs, or a full disk.
-- **The path is throwaway:** it is in the session's scratch directory, or
-  another throwaway directory you created.
-
-This is for your own ad-hoc work only. Scripts, Makefiles, dev shell
-commands and anything else committed to a repository stay portable: they
-`rm` named paths as the rest of this skill says, and never detect macOS to
-call `trash`.
-
-On other systems, the rest of this skill applies unchanged.
-
 ## When the user asks for a broad delete
 
 Show the listing (`ls`, `find -print`, `du -sh`), say how many files and
@@ -84,7 +58,7 @@ around it.
 
 - About to run `rm`, `find -delete`, `rsync --delete`, or `mv` / `cp` onto
   an existing path.
-- Cleaning up at the end of a task, which on macOS goes to the Trash.
+- Cleaning up at the end of a task.
 - Any delete whose path comes from a variable, a glob or a command's
   output.
 
@@ -96,4 +70,5 @@ missing and ask whether to install it from the same collection this skill
 came from; don't apply it from memory.
 
 - `git-hygiene-avoid-sweeping-operations`: deletions git makes: `git clean`, `git restore .`, `git reset --hard`.
+- `macos-hygiene-trash-for-ad-hoc-deletes`: on macOS, the files and folders you delete yourself outside repository code go to the Trash with `/usr/bin/trash`.
 - `shell-hygiene-long-options`: writing commands with long options where the tool that runs has them.
