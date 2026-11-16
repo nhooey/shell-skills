@@ -37,6 +37,13 @@
       url = "github:nhooey/skill-authoring-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # CC Safety Net's plugin build, whose hook runs the rulebook's fixtures
+    # in `checks.cc-safety-net-rulebook-shell-hygiene`. Pinned by flake.lock
+    # to the rev nhooey/agent-plugins-nixpkgs installs.
+    cc-safety-net = {
+      url = "github:kenryu42/cc-safety-net/plugin";
+      flake = false;
+    };
   };
 
   outputs =
@@ -105,15 +112,34 @@
             inherit (inputs.skill-authoring-skills.apps.${system}) skill-citations;
           };
 
-          # `verify` for every skill with a citations.lock.json, and a build
-          # of every skill package so a broken install layout fails the check
-          # (`default` is the aggregate under another name).
+          # `verify` for every skill with a citations.lock.json, a build of
+          # every skill package so a broken install layout fails the check
+          # (`default` is the aggregate under another name), and the CC
+          # Safety Net rulebook's own `tests` fixtures run through the
+          # plugin's hook.
           checks =
             inputs.skill-authoring-skills.lib.citationChecks {
               inherit pkgs;
               root = ./.;
             }
-            // removeAttrs base.packages.${system} [ "default" ];
+            // removeAttrs base.packages.${system} [ "default" ]
+            // {
+              cc-safety-net-rulebook-shell-hygiene =
+                pkgs.runCommand "cc-safety-net-rulebook-shell-hygiene"
+                  {
+                    nativeBuildInputs = [
+                      pkgs.bash
+                      pkgs.jq
+                      pkgs.nodejs
+                    ];
+                  }
+                  ''
+                    bash ${./tests/cc-safety-net-rulebook-fixtures.sh} \
+                      ${inputs.cc-safety-net} \
+                      ${./.cc-safety-net/rules/shell-hygiene/rulebook.json}
+                    touch $out
+                  '';
+            };
 
           devshells.default.commands = [
             {
