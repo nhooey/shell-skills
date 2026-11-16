@@ -1,6 +1,6 @@
 ---
 name: shell-hygiene-long-options
-description: Write the long form of each option, `rm --recursive --force`, `curl --silent --show-error --location`, not `-rf` or `-sSL`, in every command written down for a later reader, in a script, Makefile, CI file, document, skill, commit message or a command suggested to the user, so the reader sees what it does; a one-off command typed in a session is exempt. Covers checking that the tool which runs has the long form, keeping the short option where it has none, as macOS's BSD `rm`, `cp`, `mv`, `ls`, `sed`, `find` and `xargs` don't, writing a repository script against the dev shell's GNU tool where it runs under one, and tools a repository writes taking long options only. Use whenever writing a command into a file, a commit message or a reply someone will reuse, or reviewing one.
+description: Write the long form of each option, `rm --recursive --force`, `curl --silent --show-error --location`, not `-rf` or `-sSL`, in every command written down for a later reader, in a script, Makefile, CI file, document, skill, commit message or a command suggested to the user, so the reader sees what it does; a one-off command typed in a session is exempt. Covers checking that the tool which runs has the long form, keeping the short option where it has none, as macOS's BSD `rm`, `cp`, `mv`, `ls`, `sed` and `find` don't, writing a repository script against the dev shell's GNU tool where it runs under one, and tools a repository writes taking long options only. Use whenever writing a command into a file, a commit message or a reply someone will reuse, or reviewing one.
 tags: [style]
 allowed-tools:
   - Bash
@@ -53,21 +53,21 @@ Where that tool has no long form, the short option stays. These BSD tools
 on macOS reject long options (`rm: illegal option -- -`), while their GNU
 coreutils and findutils builds have them:
 
-| macOS tool       | Write there | GNU long form                   |
-| ---------------- | ----------- | ------------------------------- |
-| `/bin/rm`        | `rm -r -f`  | `rm --recursive --force`        |
-| `/bin/cp`        | `cp -R -p`  | `cp --recursive --preserve`     |
-| `/bin/mv`        | `mv -n`     | `mv --no-clobber`               |
-| `/bin/ln`        | `ln -s`     | `ln --symbolic`                 |
-| `/bin/mkdir`     | `mkdir -p`  | `mkdir --parents`               |
-| `/bin/ls`        | `ls -a`     | `ls --all`                      |
-| `/bin/chmod`     | `chmod -R`  | `chmod --recursive`             |
-| `/usr/bin/sed`   | `sed -n -E` | `sed --quiet --regexp-extended` |
-| `/usr/bin/xargs` | `xargs -0`  | `xargs --null`                  |
-| `/usr/bin/cut`   | `cut -d ,`  | `cut --delimiter ,`             |
-| `/usr/bin/find`  | `find -L`   | none in GNU `find` either       |
+| macOS tool      | Write there | GNU long form                   |
+| --------------- | ----------- | ------------------------------- |
+| `/bin/rm`       | `rm -r -f`  | `rm --recursive --force`        |
+| `/bin/cp`       | `cp -R -p`  | `cp --recursive --preserve`     |
+| `/bin/mv`       | `mv -n`     | `mv --no-clobber`               |
+| `/bin/ln`       | `ln -s`     | `ln --symbolic`                 |
+| `/bin/mkdir`    | `mkdir -p`  | `mkdir --parents`               |
+| `/bin/ls`       | `ls -a`     | `ls --all`                      |
+| `/bin/chmod`    | `chmod -R`  | `chmod --recursive`             |
+| `/usr/bin/sed`  | `sed -n -E` | `sed --quiet --regexp-extended` |
+| `/usr/bin/cut`  | `cut -d ,`  | `cut --delimiter ,`             |
+| `/usr/bin/find` | `find -L`   | none in GNU `find` either       |
 
-macOS's `grep`, `sort`, `head` and `/usr/bin/trash` do take long options.
+macOS's `grep`, `sort`, `head`, `xargs` and `/usr/bin/trash` do take long
+options.
 
 A repository script that runs under a dev shell putting the GNU tools on
 the `PATH`, as a Nix dev shell with coreutils does, is written against
