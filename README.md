@@ -34,7 +34,8 @@ enforces these skills with
 [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net): it blocks
 `pkill`, `killall`, `xargs kill`, `rsync --delete`, recursive `chmod` / `chown`,
 Homebrew and global npm changes, Nix garbage collection, `docker ... prune`,
-service changes and `defaults write`, on top of CC Safety Net's built-in `rm`
+service changes, `defaults write`, `chmod` with a common numeric mode, `op read`
+and `gh auth token`, on top of CC Safety Net's built-in `rm`
 and `find -delete` rules. `sudo` can't be blocked from a rulebook, because CC
 Safety Net analyzes the command it wraps.
 
