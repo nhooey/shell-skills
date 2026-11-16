@@ -34,7 +34,7 @@ is exempt.
 | Short                         | Long                                            |
 | ----------------------------- | ----------------------------------------------- |
 | `rm -rfv build`               | `rm --recursive --force --verbose build` (GNU)  |
-| `git push -f`                 | `git push --force-with-lease`                   |
+| `git push -u origin topic`    | `git push --set-upstream origin topic`          |
 | `curl -sSL "$url"`            | `curl --silent --show-error --location "$url"`  |
 | `rsync -anv src/ dst/`        | `rsync --archive --dry-run --verbose src/ dst/` |
 | `grep -rn pattern .`          | `grep --recursive --line-number pattern .`      |
