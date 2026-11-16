@@ -67,8 +67,8 @@
         # skillspkgs / nur-packages' last-write-wins `//` merge; the
         # owner+topic name is resolvable and unique, mirroring git-skills's
         # `agent-skills-nhooey-git-all`. The aggregate carries the home-manager
-        # `isFlakeSkillsEnv` passthru itself (agent-skill-flake #47), so
-        # `default` is directly installable — no hand-rolled pack.
+        # `isFlakeSkillsEnv` passthru itself, so `default` is directly
+        # installable.
         name = "agent-skills-nhooey-shell-all";
       };
     in
@@ -123,8 +123,9 @@
           # `nix fmt` runs nixfmt over `.nix` and prettier over `.md` / `.yaml`;
           # the module also surfaces a `checks.${system}.treefmt` so `nix flake
           # check` fails on any unformatted file. prettier's includes are pinned
-          # to markdown and YAML so it leaves `evals.json` (and any future JSON)
-          # alone — add formatters here as other tracked file types arrive.
+          # to markdown and YAML so it leaves the JSON files (the CC Safety Net
+          # rulebook, `citations.lock.json`) as their tools write them — add
+          # formatters here as other tracked file types arrive.
           treefmt = {
             projectRootFile = "flake.nix";
             programs.nixfmt.enable = true;
@@ -146,9 +147,8 @@
           # name, motd, the install-skills startup that reconciles the runtime
           # `skills-devshell/` sub-flake at project scope, the ci/dev/maintenance
           # command trio (check / fmt / update-flake), and the skills commands
-          # (reap-skills / update-skills-devshell). This repo adds no dev-shell
-          # packages or commands of its own, so there is no `devshells.default`
-          # block here.
+          # (reap-skills / update-skills-devshell). This repo adds only the
+          # `skill-citations` command, in `devshells.default.commands` above.
         };
     };
 }
