@@ -9,12 +9,12 @@ _A command worth running twice is worth a name. It goes in the project as a tool
 
 ## The rule
 
-1. **Run twice, make it a tool.** A command, pipeline or script that you, a later session or a person will run again becomes a tool committed in the project. So does one that a committed file or claim rests on. It never lives in the scratchpad, in a shell history, or as a block pasted from one reply to the next.
+1. **Run twice, make it a tool.** A command, pipeline or script that has run a second time, or that you, a later session or a person will run again, becomes a tool committed in the project, named for what it does, with a docstring or header saying what it does and how to call it. So does code that a committed file or claim rests on, even if it ran once: a script that built a committed file becomes a tool, and a probe behind a documented behaviour becomes a test or an eval example. A tool that isn't specific to the project goes in a skill's `scripts/` instead. None of it lives in the scratchpad, in a shell history, or as a block pasted from one reply to the next.
 2. **Grow the tool that's there.** Before writing a new one, look for the project's existing tool, dev shell command, `Makefile` target or package script that does the job or nearly does. Add a command or an option to it rather than a script beside it. A project ends up with a few tools with many commands, not many one-purpose scripts.
 3. **Documents name the command.** A README, `AGENTS.md`, `CLAUDE.md`, a skill, a CI workflow or a plan says `tool sync --dry-run`, never the five lines it runs. A recipe that a reader would copy is a tool that hasn't been written yet.
-4. **The scratchpad holds data, not programs.** Captured output, drafts and samples go there, named for what they hold. A program written there to run once is a one-off check that should have run inline; one run a second time moves into the project under this rule.
+4. **The scratchpad holds data, not programs:** `coding-agent-scratchpad-scripts` says what may go there and how it's named.
 
-A one-liner stays inline when it's a single command a reader understands at a glance (`git log --oneline -5`, `nix flake check`) or a check run once to answer a question. A heredoc into `python3 -` for a one-off check is fine. Editing a file is not a command at all: it goes through the agent's edit tool.
+A single command a reader understands at a glance (`git log --oneline -5`, `nix flake check`) stays inline. A check run once to answer a question, and an edit to a file, follow `coding-agent-scratchpad-scripts`.
 
 ## The tool's shape
 
@@ -74,7 +74,7 @@ without asking. If it isn't in your listing, tell the user which skill is
 missing and ask whether to install it from the same collection this skill
 came from; don't apply it from memory.
 
-- `coding-agent-scratchpad-scripts`: what may go in the scratchpad, and edits through the edit tools rather than generated scripts.
+- `coding-agent-scratchpad-scripts`: what the scratchpad may hold and how its files are named, one-off checks run inline, edits through the edit tools, and never `source` a generated file.
 - `nix-flakes`: the dev shell's command discipline: categories, `help`, sorting, scripts in their own files.
 - `python-hygiene-functional-style`: the pure core and thin shell, for a tool written in Python.
 - `coding-agent-skill-references`: the preferences files this skill reads.

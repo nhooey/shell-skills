@@ -18,15 +18,20 @@ listed it, and `rm` has no undo.
 
 ## Commands to avoid, and what to run instead
 
-| Avoid                                                    | What it reaches                                     | Run instead                                                   |
-| -------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
-| `rm -rf "$DIR"/` or `rm -rf "$DIR/*"`                    | `/` or the working directory when `$DIR` is empty   | `rm -rf "${DIR:?}/name"`, which fails on an empty variable    |
-| `rm -rf *`, `rm -rf .*`, `rm -rf ./*`                    | everything in the directory, others' files included | `ls`, then `rm` the named paths you created                   |
-| `rm -rf ~/...`, `rm -rf /tmp/*`                          | the user's files, other sessions' temp files        | delete your own paths; use the session's scratch directory    |
-| `find ... -delete`, `find ... -exec rm`                  | every match, unseen                                 | run the same `find` with `-print` first, read it, then delete |
-| `rsync -a --delete src/ dst/` into an existing directory | every file in `dst` not in `src`                    | `rsync -n --delete` to list first, or a fresh `dst`           |
-| `mv` or `cp` over an existing path                       | the file already there                              | `mv -n` / `cp -n`, or check with `ls` first                   |
-| `> file` on a file you didn't create                     | its contents                                        | write to a new path                                           |
+| Avoid                                                           | What it reaches                                     | Run instead                                                   |
+| --------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| `rm -rf "$DIR"/` or `rm -rf "$DIR/*"`                           | `/` or the working directory when `$DIR` is empty   | `rm -rf "${DIR:?}/name"`, which fails on an empty variable    |
+| `rm -rf *`, `rm -rf .*`, `rm -rf ./*`                           | everything in the directory, others' files included | `ls`, then `rm` the named paths you created                   |
+| `rm -rf ~/...`, `rm -rf /tmp/*`                                 | the user's files, other sessions' temp files        | delete your own paths; use the session's scratch directory    |
+| `find ... -delete`, `find ... -exec rm`                         | every match, unseen                                 | run the same `find` with `-print` first, read it, then delete |
+| `rsync --archive --delete src/ dst/` into an existing directory | every file in `dst` not in `src`                    | `rsync --dry-run --delete` to list first, or a fresh `dst`    |
+| `mv` or `cp` over an existing path                              | the file already there                              | `mv -n` / `cp -n`, or check with `ls` first                   |
+| `> file` on a file you didn't create                            | its contents                                        | write to a new path                                           |
+
+The `rm`, `mv`, `cp`, `du` and `mktemp` options here stay short because
+macOS's BSD builds have no long forms for them. Where GNU coreutils is the
+tool that runs, write `rm --recursive --force`, `mv --no-clobber` and
+`cp --no-clobber`.
 
 ## Keep what you create where you can find it
 
@@ -65,3 +70,5 @@ missing and ask whether to install it from the same collection this skill
 came from; don't apply it from memory.
 
 - `git-hygiene-avoid-sweeping-operations`: deletions git makes: `git clean`, `git restore .`, `git reset --hard`.
+- `macos-hygiene-trash-for-ad-hoc-deletes`: on macOS, the files and folders you delete yourself outside repository code go to the Trash with `/usr/bin/trash`.
+- `shell-hygiene-long-options`: writing commands with long options where the tool that runs has them.

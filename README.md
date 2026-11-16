@@ -26,6 +26,7 @@ in git-skills.
 | [`shell-hygiene-symbolic-permission-modes`](skills/shell-hygiene-symbolic-permission-modes/SKILL.md)   | Write permissions as symbolic modes such as `ug+rw`, never octal numbers like `755`, which reset every bit.        |
 | [`shell-hygiene-secrets-through-secretspec`](skills/shell-hygiene-secrets-through-secretspec/SKILL.md) | Read secrets through SecretSpec with a reason, into one command's environment; never into files or the dev shell.  |
 | [`shell-hygiene-commands-as-cli-tools`](skills/shell-hygiene-commands-as-cli-tools/SKILL.md)           | A command run twice becomes a committed tool with commands, options and a dev shell entry; documents name it.      |
+| [`shell-hygiene-long-options`](skills/shell-hygiene-long-options/SKILL.md)                             | Write `--recursive`, not `-r`, where the tool that runs has it; check first, since macOS's BSD tools often don't.  |
 
 ## CC Safety Net rulebook
 
@@ -34,7 +35,8 @@ enforces these skills with
 [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net): it blocks
 `pkill`, `killall`, `xargs kill`, `rsync --delete`, recursive `chmod` / `chown`,
 Homebrew and global npm changes, Nix garbage collection, `docker ... prune`,
-service changes and `defaults write`, on top of CC Safety Net's built-in `rm`
+service changes, `defaults write`, `chmod` with a common numeric mode, `op read`
+and `gh auth token`, on top of CC Safety Net's built-in `rm`
 and `find -delete` rules. `sudo` can't be blocked from a rulebook, because CC
 Safety Net analyzes the command it wraps.
 
@@ -61,6 +63,7 @@ Package outputs:
 - `agent-skill-nhooey-shell-hygiene-symbolic-permission-modes`
 - `agent-skill-nhooey-shell-hygiene-secrets-through-secretspec`
 - `agent-skill-nhooey-shell-hygiene-commands-as-cli-tools`
+- `agent-skill-nhooey-shell-hygiene-long-options`
 
 ## Development
 
