@@ -188,6 +188,10 @@ refusal is the user's control over the secret; fetching it another way
 removes it. Don't retry in a loop either: each try is another prompt for
 the user.
 
+The `shell-hygiene` rulebook for
+[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net), in the
+collection this skill came from, blocks `op read` and `gh auth token`.
+
 ## When to apply
 
 - A command, script or project needs a token, API key or password.
