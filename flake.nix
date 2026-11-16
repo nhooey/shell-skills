@@ -105,11 +105,15 @@
             inherit (inputs.skill-authoring-skills.apps.${system}) skill-citations;
           };
 
-          # `verify` for every skill with a citations.lock.json.
-          checks = inputs.skill-authoring-skills.lib.citationChecks {
-            inherit pkgs;
-            root = ./.;
-          };
+          # `verify` for every skill with a citations.lock.json, and a build
+          # of every skill package so a broken install layout fails the check
+          # (`default` is the aggregate under another name).
+          checks =
+            inputs.skill-authoring-skills.lib.citationChecks {
+              inherit pkgs;
+              root = ./.;
+            }
+            // removeAttrs base.packages.${system} [ "default" ];
 
           devshells.default.commands = [
             {

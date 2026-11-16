@@ -11,5 +11,5 @@ the CC Safety Net rules that enforce them.
 - `nix develop`: enter the dev shell, which installs the dev-shell skills
   from `skills-devshell/` into `.agents/skills/`; `menu` lists its commands.
 - `nix fmt`: nixfmt over `*.nix`, prettier over `*.md` and `*.yaml`.
-- `nix flake check`: the treefmt check, and `skill-citations verify` for each
-  skill with a `citations.lock.json`.
+- `nix flake check`: the treefmt check, a build of every skill package, and
+  `skill-citations verify` for each skill with a `citations.lock.json`.
