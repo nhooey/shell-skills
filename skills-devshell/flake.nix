@@ -20,21 +20,21 @@
     # its own (compatible) builder. `mkDevshellSkillsFlake` still runs from this
     # flake's `agent-skill-flake.lib`, so the combiner is the pinned rev above.
     coding-agent-skills = {
-      url = "github:nhooey/coding-agent-skills/overnight-skills";
+      url = "github:nhooey/coding-agent-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     git-skills = {
-      url = "github:nhooey/git-skills/overnight-skills";
+      url = "github:nhooey/git-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # Not a source of its own: the `authoring` combination below follows it,
     # so its `nix-flakes` comes from the same branch as the other skills.
     nix-skills = {
-      url = "github:nhooey/nix-skills/overnight-skills";
+      url = "github:nhooey/nix-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     shell-skills = {
-      url = "github:nhooey/shell-skills/overnight-skills";
+      url = "github:nhooey/shell-skills";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
