@@ -66,6 +66,7 @@ Package outputs:
 
 ```bash
 nix develop      # enter the dev shell; run `menu` to list commands
-nix fmt          # nixfmt over *.nix, prettier over *.md / *.yaml
-nix flake check  # treefmt, skill package builds, `skill-citations verify`, and the CC Safety Net rulebook's fixtures
+nix fmt          # nixfmt over *.nix, ruff over *.py, prettier over *.md / *.yaml
+rulebook test    # run the CC Safety Net rulebook's fixtures through the pinned plugin's hook
+nix flake check  # treefmt, skill package builds, `skill-citations verify`, `rulebook test` and its unit tests
 ```
