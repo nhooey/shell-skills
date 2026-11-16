@@ -1,32 +1,20 @@
 ---
 name: shell-hygiene-delete-named-paths
-description: |
-  Never delete by glob, unchecked variable or whole tree: no
-  `rm -rf "$DIR"/` with `$DIR` possibly empty, `rm -rf *`, `rm -rf ~/...`,
-  `find ... -delete` or `-exec rm` without a listing first, or
-  `rsync --delete` into a directory you didn't create. List what will go,
-  then delete the paths you created, by name. Keep temporary files in the
-  session's scratch directory. Apply whenever about to remove, overwrite or
-  move files or directories.
+description: Delete only the paths you created, by name, after listing what will go. No deleting by glob, unchecked variable or whole tree: no `rm -rf "$DIR"/` with `$DIR` possibly empty, `rm -rf *`, `rm -rf ~/...`, `find ... -delete` or `-exec rm` without a listing first, `rsync --delete` into a directory you didn't create, or `mv`, `cp` or `>` over a file already there. Covers the narrower command for each, keeping temporary files in the session's scratch directory, and showing the user a broad delete before running it. Use whenever about to remove, overwrite or move files or directories.
 tags: [safety]
 allowed-tools:
   - Bash
 ---
 
-# shell-hygiene-delete-named-paths
+# Delete named paths
+
+_List first, then delete the paths you created, by name._
 
 A deletion is only as narrow as its arguments. A glob expands to whatever
 is there now, a variable can be empty or point somewhere unexpected, and
 `find` matches more than you looked at. The user, another agent or a
 generator may have put files in the same directory since you last
 listed it, and `rm` has no undo.
-
-The rule: **list first, then delete the paths you created, by name.**
-
-## How to load this skill
-
-Passive reference. Loading it doesn't mean the user wants anything
-deleted now — just that when something is, you'll name it.
 
 ## Commands to avoid, and what to run instead
 
@@ -54,10 +42,12 @@ up" means the paths you created, not the directory.
 
 ## Enforcement
 
-This repo's [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net)
-rulebook, `.cc-safety-net/rules/shell-hygiene/rulebook.json`, blocks
-`rsync --delete`; CC Safety Net itself blocks `rm -rf` outside the working directory and `find -delete`. A block reason tagged `[shell-hygiene/<rule>]` comes from it;
-take the alternative it names rather than working around it.
+[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net) blocks
+`rm -rf` outside the working directory and `find -delete` on its own. The
+`shell-hygiene` rulebook for it, in the collection this skill came from,
+also blocks `rsync --delete`. A block reason tagged `[shell-hygiene/<rule>]`
+comes from that rulebook; take the alternative it names rather than working
+around it.
 
 ## When to apply
 

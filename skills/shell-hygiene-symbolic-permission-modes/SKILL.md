@@ -1,19 +1,14 @@
 ---
 name: shell-hygiene-symbolic-permission-modes
-description: |
-  Write file permissions as symbolic modes, never octal numbers: `chmod
-  u+x script.sh`, `chmod ug+rw shared.db`, `chmod go-w config`, not
-  `chmod 755`, `chmod 644` or `chmod 0600`. A symbolic mode changes only
-  the bits it names and reads as what it does; a number resets every bit,
-  dropping ones you didn't mean to touch. The same goes for `install -m`,
-  `mkdir -m`, `umask` and modes written in Nix, Dockerfiles, Ansible or
-  scripts. Apply whenever about to set, change or describe a file mode.
+description: Write file permissions as symbolic modes, never octal numbers, `chmod u+x script.sh`, `chmod ug+rw shared.db` and `chmod go-w config` rather than `chmod 755`, `chmod 644` or `chmod 0600`, because a symbolic mode changes only the bits it names and reads as what it does, while a number resets every bit. Covers the symbolic replacement for each common number, `X` in recursive changes, `=` for an exact mode, `install -m`, `mkdir -m` and `umask`, modes in Dockerfiles and Ansible, a commented number where a format accepts only numbers (Nix, Python's `os.chmod`), and describing a mode in words. Use whenever about to set, change or describe a file mode.
 tags: [safety]
 allowed-tools:
   - Bash
 ---
 
-# shell-hygiene-symbolic-permission-modes
+# Symbolic permission modes
+
+_Write the change you mean as a symbolic mode, `ug+rw`, never as a number._
 
 An octal mode sets all twelve permission bits at once. `chmod 644 run.sh`
 to make a file readable also clears its execute bit, and `chmod 755` on a
@@ -24,15 +19,6 @@ reads and writes, group reads".
 A symbolic mode names who, how and what — `u`, `g`, `o` or `a`; `+`, `-`
 or `=`; `r`, `w`, `x`, `X`, `s`, `t` — and leaves every other bit as it
 was.
-
-The rule: **write the change you mean as a symbolic mode, `ug+rw`, never
-as a number.**
-
-## How to load this skill
-
-Passive reference. Loading it doesn't mean the user wants permissions
-changed now — just that when they are, you'll write the mode
-symbolically.
 
 ## Numbers to avoid, and what to write instead
 
