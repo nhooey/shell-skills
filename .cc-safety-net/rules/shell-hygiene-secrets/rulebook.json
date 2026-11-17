@@ -1,0 +1,203 @@
+{
+  "rulebook_version": 2,
+  "name": "shell-hygiene-secrets",
+  "version": "1.0.0",
+  "description": "Blocks the `op` commands that print a secret into the session and need a command path: `op item get --format json`, `op document get`, `op run`, `op inject` and `op signin --raw`, and a secret-printing `op`, `gh` or `security` command run through `nix run`. The shell-hygiene rulebook holds `op read` and `op item --reveal` as version 1 rules, which see past an `op` global option such as `--account my`, and the `gh`, `security` and `secretspec` secret rules, `secretspec run -- op` among them. List `nix` in the config's `transparent_wrappers`, and no other command, so these rules also apply under `nix develop --command` and `nix shell`; `nix run` names its program inside a flake reference, which a wrapper can't see, so it keeps a rule of its own. `secretspec` is not a transparent wrapper, since it runs `op` itself on the agent's behalf. The why and the alternatives live in the shell-hygiene-secrets-through-secretspec skill in nhooey/shell-skills. Known misses, kept as `allowed` fixtures so a fix shows up as a failing test: an `op` global option that takes a value before the subcommand, such as `op --account my item get X --format json` or `op --format json item get X`; `--format=JSON`; and an `OP_FORMAT=json` prefix. Also not caught: a `nix` global option before `run`.",
+  "author": "nhooey/shell-skills",
+  "allowed_commands": ["op", "nix"],
+  "rules": [
+    {
+      "name": "op-item-format",
+      "command": "op",
+      "match": {
+        "command_path": ["item"],
+        "any_args": ["--format", "--format=json"],
+        "exclude_args": ["list"]
+      },
+      "reason": "`op item get --format json` prints concealed fields, as do `op item create` and `op item edit` with it. Read the secret through SecretSpec: `secretspec get --reason \"…\" KEY`. `op item list --format json` still works.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "op-document-get",
+      "command": "op",
+      "match": { "command_path": ["document", "get"] },
+      "reason": "Prints a stored document into the session or writes it to a file. Ask the user, or read it through SecretSpec into the one command that needs it.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "op-run",
+      "command": "op",
+      "match": { "command_path": ["run"] },
+      "reason": "Loads secrets into a command, and `--no-masking` or any change to a value gets them past its output masking. Use `secretspec run --reason \"…\" -- <command>`.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "op-inject",
+      "command": "op",
+      "match": { "command_path": ["inject"] },
+      "reason": "Writes every secret a template names into the session or a file. Read each through SecretSpec into the one command that needs it: `secretspec get --reason \"…\" KEY`.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "op-signin-raw",
+      "command": "op",
+      "match": { "command_path": ["signin"], "any_args": ["--raw"] },
+      "reason": "Prints a 1Password session token into the session. Let SecretSpec talk to 1Password.",
+      "intent": "manual_only"
+    },
+    {
+      "name": "nix-run-secret-read",
+      "command": "nix",
+      "match": {
+        "command_path": ["run"],
+        "any_args": [
+          "read",
+          "token",
+          "inject",
+          "oauth_token",
+          "--reveal",
+          "--otp",
+          "--show-token",
+          "find-generic-password",
+          "find-internet-password",
+          "dump-keychain"
+        ]
+      },
+      "reason": "Runs a secret-printing `op`, `gh` or `security` command through `nix run`, whose program CC Safety Net can't see inside the flake reference. Read the secret through SecretSpec into the one command that needs it.",
+      "intent": "use_alternative"
+    }
+  ],
+  "tests": [
+    { "command": "op item list", "expect": "allowed" },
+    { "command": "op whoami", "expect": "allowed" },
+    {
+      "command": "op item get abc --format json",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "op item get abc --format=json",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "op item get --format json abc",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "op item edit abc --format json",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    { "command": "op item list --format json", "expect": "allowed" },
+    {
+      "command": "op item list --vault Private --format=json",
+      "expect": "allowed"
+    },
+    { "command": "op item get abc --fields username", "expect": "allowed" },
+    {
+      "command": "op document get abc",
+      "expect": "blocked",
+      "rule": "op-document-get"
+    },
+    {
+      "command": "op document get abc --out-file x.pdf",
+      "expect": "blocked",
+      "rule": "op-document-get"
+    },
+    { "command": "op document list", "expect": "allowed" },
+    { "command": "op run -- env", "expect": "blocked", "rule": "op-run" },
+    {
+      "command": "op run --no-masking -- env",
+      "expect": "blocked",
+      "rule": "op-run"
+    },
+    {
+      "command": "op run -- sh -c 'echo $T | base64'",
+      "expect": "blocked",
+      "rule": "op-run"
+    },
+    {
+      "command": "op inject -i t.tpl",
+      "expect": "blocked",
+      "rule": "op-inject"
+    },
+    {
+      "command": "op inject -i t.tpl -o out.conf",
+      "expect": "blocked",
+      "rule": "op-inject"
+    },
+    {
+      "command": "op signin --raw",
+      "expect": "blocked",
+      "rule": "op-signin-raw"
+    },
+    { "command": "op signin", "expect": "allowed" },
+    {
+      "command": "env FOO=1 op item get abc --format json",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "bash -c 'op item get abc --format json'",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "nix develop --command op item get abc --format json",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "nix develop -c op item get abc --format json",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "nix shell nixpkgs#_1password-cli --command op item get abc --format json",
+      "expect": "blocked",
+      "rule": "op-item-format"
+    },
+    {
+      "command": "nix develop --command op run -- env",
+      "expect": "blocked",
+      "rule": "op-run"
+    },
+    {
+      "command": "nix run nixpkgs#gh -- auth token",
+      "expect": "blocked",
+      "rule": "nix-run-secret-read"
+    },
+    {
+      "command": "nix run nixpkgs#gh -- auth status --show-token",
+      "expect": "blocked",
+      "rule": "nix-run-secret-read"
+    },
+    {
+      "command": "nix run nixpkgs#_1password-cli -- read op://vault/item/field",
+      "expect": "blocked",
+      "rule": "nix-run-secret-read"
+    },
+    {
+      "command": "nix run nixpkgs#_1password-cli -- item get abc --reveal",
+      "expect": "blocked",
+      "rule": "nix-run-secret-read"
+    },
+    { "command": "nix run nixpkgs#hello", "expect": "allowed" },
+    { "command": "nix run .#rulebook -- test", "expect": "allowed" },
+    { "command": "nix develop --command bats tests", "expect": "allowed" },
+    {
+      "command": "nix develop --command git log --grep token",
+      "expect": "allowed"
+    },
+    { "command": "nix build .#default", "expect": "allowed" },
+    {
+      "command": "op --account my item get abc --format json",
+      "expect": "allowed"
+    },
+    { "command": "op --format json item get abc", "expect": "allowed" },
+    { "command": "op item get abc --format=JSON", "expect": "allowed" },
+    { "command": "OP_FORMAT=json op item get abc", "expect": "allowed" }
+  ]
+}

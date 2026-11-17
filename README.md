@@ -28,21 +28,56 @@ in git-skills.
 | [`shell-hygiene-commands-as-cli-tools`](skills/shell-hygiene-commands-as-cli-tools/SKILL.md)           | A command run twice becomes a committed tool with commands, options and a dev shell entry; documents name it.      |
 | [`shell-hygiene-long-options`](skills/shell-hygiene-long-options/SKILL.md)                             | Written commands use `--recursive`, not `-r`, where the tool has it; macOS's BSD tools often don't.                |
 
-## CC Safety Net rulebook
+## CC Safety Net rulebooks
 
-[`.cc-safety-net/rules/shell-hygiene/rulebook.json`](.cc-safety-net/rules/shell-hygiene/rulebook.json)
-enforces these skills with
-[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net): it blocks
-`pkill`, `killall`, `xargs kill`, `rsync --delete`, recursive `chmod` / `chown`,
-Homebrew and global npm changes, Nix garbage collection, `docker ... prune`,
-service changes, `defaults write`, `chmod` with a common numeric mode, `op read`
-and `gh auth token`, on top of CC Safety Net's built-in `rm`
-and `find -delete` rules. `sudo` can't be blocked from a rulebook, because CC
-Safety Net analyzes the command it wraps.
+Two rulebooks enforce these skills with
+[CC Safety Net](https://github.com/kenryu42/claude-code-safety-net), on top of
+its built-in `rm` and `find -delete` rules:
+
+- [`shell-hygiene`](.cc-safety-net/rules/shell-hygiene/rulebook.json) blocks
+  `pkill`, `killall`, `xargs kill`, `rsync --delete`, recursive `chmod` /
+  `chown`, Homebrew and global npm changes, Nix garbage collection,
+  `docker ... prune`, service changes, `defaults write`, `chmod` with a common
+  numeric mode, and the commands that print a secret into the session:
+  `op read`, `op item get --reveal`, `gh auth token`,
+  `gh auth status --show-token`, `gh config get oauth_token`,
+  `security find-generic-password -w`, `secretspec run -- env` and every
+  `secretspec run -- op ...`. `op read` and `op item --reveal` stay at
+  `rulebook_version` 1, which sees past an `op` global option such as
+  `--account my`.
+- [`shell-hygiene-secrets`](.cc-safety-net/rules/shell-hygiene-secrets/rulebook.json),
+  a `rulebook_version` 2 rulebook whose rules match a command path, blocks the
+  other `op` commands that print a secret: `op item get --format json` (while
+  `op item list --format json` still works), `op document get`, `op run`,
+  `op inject` and `op signin --raw`; and a secret-printing `op`, `gh` or
+  `security` command run through `nix run`.
 
 ```bash
 cc-safety-net rule add nhooey/shell-skills --only shell-hygiene --global
+cc-safety-net rule add nhooey/shell-skills --only shell-hygiene-secrets --global
 ```
+
+List `nix` under `transparent_wrappers` in CC Safety Net's
+`rules/rule.json`, so both rulebooks' rules also block their commands run
+through `nix develop --command` or `nix shell ... --command`:
+
+```json
+{ "transparent_wrappers": ["nix"] }
+```
+
+`nix` is the only transparent wrapper. `secretspec` isn't one, since it runs
+`op` itself on the agent's behalf, so the `secretspec-run-op` rule blocks
+`secretspec run -- op ...` whatever `op` does.
+
+`sudo` can't be blocked from a rulebook, because CC Safety Net analyzes the
+command it wraps. The `op` rules miss 4 spellings, which their fixtures keep
+as known misses:
+
+- an `op` global option that takes a value, before the subcommand:
+  - `op --account my item get X --format json`;
+  - `op --format json item get X`;
+- `--format=JSON`;
+- an `OP_FORMAT=json` prefix.
 
 ## Install
 
@@ -70,6 +105,6 @@ Package outputs:
 ```bash
 nix develop      # enter the dev shell; run `menu` to list commands
 nix fmt          # nixfmt over *.nix, ruff over *.py, prettier over *.md / *.yaml
-rulebook test    # run the CC Safety Net rulebook's fixtures through the pinned plugin's hook
+rulebook test --transparent-wrapper nix  # run the CC Safety Net rulebooks' fixtures through the pinned plugin's hook
 nix flake check  # treefmt, skill package builds, `skill-citations verify`, `rulebook test` and its unit tests
 ```

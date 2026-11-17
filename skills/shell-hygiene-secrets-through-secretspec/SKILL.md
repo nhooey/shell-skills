@@ -188,9 +188,15 @@ refusal is the user's control over the secret; fetching it another way
 removes it. Don't retry in a loop either: each try is another prompt for
 the user.
 
-The `shell-hygiene` rulebook for
+The `shell-hygiene` and `shell-hygiene-secrets` rulebooks for
 [CC Safety Net](https://github.com/kenryu42/claude-code-safety-net), in the
-collection this skill came from, blocks `op read` and `gh auth token`.
+collection this skill came from, block `op read`, `op item get --reveal`,
+`op item get --format json`, `op document get`, `op run`, `op inject`,
+`gh auth token`, `gh auth status --show-token`,
+`security find-generic-password -w` and the other commands that print a
+secret into the session. They can't catch every one
+(`secretspec run -- sh -c 'echo ...'` and `op --account my item get X --format json`
+among them), so the rule above still holds where the rulebooks are silent.
 
 ## When to apply
 

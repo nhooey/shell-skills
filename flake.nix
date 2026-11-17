@@ -134,20 +134,28 @@
 
           # `verify` for every skill with a citations.lock.json, a build of
           # every skill package so a broken install layout fails the check
-          # (`default` is the aggregate under another name), the CC Safety
+          # (`default` is the aggregate under another name), each CC Safety
           # Net rulebook's own `tests` fixtures run through the plugin's hook
-          # by `rulebook test`, and that tool's unit tests.
+          # by `rulebook test` with `nix` as a transparent wrapper, as the
+          # README recommends, and that tool's unit tests.
           checks =
             inputs.skill-authoring-skills.lib.citationChecks {
               inherit pkgs;
               root = ./.;
             }
             // removeAttrs base.packages.${system} [ "default" ]
+            // lib.genAttrs' [ "shell-hygiene" "shell-hygiene-secrets" ] (
+              name:
+              lib.nameValuePair "cc-safety-net-rulebook-${name}" (
+                pkgs.runCommand "cc-safety-net-rulebook-${name}" { } ''
+                  ${lib.getExe rulebook} test --transparent-wrapper nix ${
+                    ./.cc-safety-net/rules + "/${name}/rulebook.json"
+                  }
+                  touch $out
+                ''
+              )
+            )
             // {
-              cc-safety-net-rulebook-shell-hygiene = pkgs.runCommand "cc-safety-net-rulebook-shell-hygiene" { } ''
-                ${lib.getExe rulebook} test ${./.cc-safety-net/rules/shell-hygiene/rulebook.json}
-                touch $out
-              '';
               rulebook-tests =
                 pkgs.runCommand "rulebook-tests"
                   {

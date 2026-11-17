@@ -2,11 +2,15 @@
 
 Commands:
 
-  rulebook [--plugin DIR] test [--plugin DIR] [RULEBOOK ...]
+  rulebook [--plugin DIR] test [--plugin DIR] [--transparent-wrapper CMD ...]
+                                [RULEBOOK ...]
       Run each rulebook's own `tests` fixtures through the plugin's
       PreToolUse hook, as Claude Code runs it, and fail on any fixture whose
       outcome differs. With no RULEBOOK, tests every
       `.cc-safety-net/rules/*/rulebook.json` under the current directory.
+      Each --transparent-wrapper names a command, such as `nix`, written
+      into the test config's `transparent_wrappers`, so the rulebook's rules
+      also apply to a protected command run through it.
 
 A `blocked` fixture passes only when the hook denies the command and names
 the fixture's rule (`custom.<rulebook>/<rule>`), so a deny from a built-in
@@ -62,6 +66,15 @@ def parse_args(argv):
         "before the command",
     )
     test.add_argument(
+        "--transparent-wrapper",
+        metavar="CMD",
+        dest="transparent_wrappers",
+        action="append",
+        default=[],
+        help="list CMD in the test config's `transparent_wrappers`, so a "
+        "rule also applies to its command run through CMD; repeatable",
+    )
+    test.add_argument(
         "rulebooks",
         metavar="RULEBOOK",
         nargs="*",
@@ -85,6 +98,15 @@ def uncovered_rules(rulebook):
         for rule in rulebook.get("rules", [])
         if rule["name"] not in covered
     ]
+
+
+def config(name, transparent_wrappers):
+    """The `rules/rule.json` that loads one rulebook, with any wrappers."""
+    return {"version": 1, "rules": [name]} | (
+        {"transparent_wrappers": list(transparent_wrappers)}
+        if transparent_wrappers
+        else {}
+    )
 
 
 def hook_input(command):
@@ -172,14 +194,14 @@ def run_hook(plugin, home, command):
     return result.stdout
 
 
-def test_rulebook(plugin, path):
+def test_rulebook(plugin, path, transparent_wrappers=()):
     rulebook = json.loads(Path(path).read_text())
     name = rulebook["name"]
     with tempfile.TemporaryDirectory() as home:
         rules = Path(home) / "rules"
         (rules / name).mkdir(parents=True)
         (rules / name / "rulebook.json").write_text(Path(path).read_text())
-        (rules / "rule.json").write_text(json.dumps({"version": 1, "rules": [name]}))
+        (rules / "rule.json").write_text(json.dumps(config(name, transparent_wrappers)))
         outputs = [
             run_hook(plugin, home, test["command"])
             for test in rulebook.get("tests", [])
@@ -204,7 +226,9 @@ def main(argv=None):
             file=sys.stderr,
         )
         return 2
-    results = [test_rulebook(args.plugin, path) for path in paths]
+    results = [
+        test_rulebook(args.plugin, path, args.transparent_wrappers) for path in paths
+    ]
     return 0 if all(results) else 1
 
 
