@@ -7,47 +7,22 @@
 
     # The builder lib. agent-skill-flake carries zero skill inputs, so it does
     # not drag the skill mesh into this sub-flake's lock — only the skill
-    # sources below do.
+    # source below does.
     agent-skill-flake = {
       url = "github:nhooey/agent-skill-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Dev-shell skill sources. They follow the parent `nixpkgs` but NOT
-    # `agent-skill-flake`: forcing skillspkgs' `authoring` combination's
-    # transitive sources onto a single pinned builder surfaces an ownerless
-    # aggregate-key the strict namespace check rejects, so each source keeps
-    # its own (compatible) builder. `mkDevshellSkillsFlake` still runs from this
-    # flake's `agent-skill-flake.lib`, so the combiner is the pinned rev above.
-    coding-agent-skills = {
-      url = "github:nhooey/coding-agent-skills";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    git-skills = {
-      url = "github:nhooey/git-skills";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    # Not a source of its own: the `authoring` combination below follows it,
-    # so its `nix-flakes` comes from the same branch as the other skills.
-    nix-skills = {
-      url = "github:nhooey/nix-skills";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    shell-skills = {
-      url = "github:nhooey/shell-skills";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # skillspkgs' curated `authoring` combination, surfaced through its own
-    # subdir flake (`mkCombination` keeps a combination re-composable). A
-    # `?dir=` into a *different* repo fetches cleanly for transitive consumers.
+    # skillspkgs' per-family combinations, surfaced through their own subdir
+    # flake. It follows the parent `nixpkgs` but NOT `agent-skill-flake`:
+    # forcing a combination's transitive sources onto a single pinned builder
+    # surfaces an ownerless aggregate-key the strict namespace check rejects,
+    # so the combination keeps its own (compatible) builder.
+    # `mkDevshellSkillsFlake` still runs from this flake's
+    # `agent-skill-flake.lib`, so the combiner is the pinned rev above.
     skillspkgs-combinations = {
       url = "github:nhooey/skillspkgs?dir=sources/combinations";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        git-skills.follows = "git-skills";
-        nix-skills.follows = "nix-skills";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -68,22 +43,12 @@
       # (== agent-skills-shell-skills-devshell) and packagePrefix
       # defaults to "agent-skill-".
       sources = [
-        # Commits, branches and pull requests.
-        { source = inputs.git-skills; }
-        # Safe shell commands: named deletes, PIDs, no machine-wide changes.
-        { source = inputs.shell-skills; }
-        # Running a prompt as a headless session in other checkouts, keeping
-        # the scratchpad tidy, and the cross-repository plan's graph.
-        {
-          source = inputs.coding-agent-skills;
-          skills = [
-            "coding-agent-headless-in-checkout"
-            "coding-agent-plans-as-graph"
-            "coding-agent-scratchpad-scripts"
-          ];
-        }
-        # Skill authoring: skill-creator, superpowers, humanizer, nix-flakes.
-        { source = inputs.skillspkgs-combinations.combinations.authoring; }
+        # The skill-collections family's combination: the shared base (git,
+        # shell, Markdown, writing, nix-flakes, headless runs and plans) plus
+        # skill authoring. shell-skills' own skills come with it. No
+        # additions: this repository uses no language or tool the rest of
+        # its family doesn't.
+        { source = inputs.skillspkgs-combinations.combinations.skill-collections; }
       ];
     };
 }
