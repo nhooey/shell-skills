@@ -18,7 +18,7 @@ A single command a reader understands at a glance (`git log --oneline -5`, `nix 
 
 ## The tool's shape
 
-- **Commands and options:** one executable per area of the project, with command tokens for its jobs (`tool prepare`, `tool run`, `tool report`) and named options for every choice (`--parallel 2`, `--dry-run`). Positional arguments only for the thing acted on. No behaviour hidden in environment variables a reader can't see in `--help`.
+- **Commands and options:** one executable per area of the project, with command tokens for its jobs (`tool prepare`, `tool run`, `tool report`) and named long options for every choice (`--parallel 2`, `--dry-run`), with no one-letter aliases, as `shell-hygiene-long-options` says. Positional arguments only for the thing acted on. No behaviour hidden in environment variables a reader can't see in `--help`.
 - **`--help` at every level:** the tool and each command say what they do, their arguments and an example. The module's docstring, or the script's header, says the same.
 - **Language:** the project's own language, so its tests, formatter and linters cover the tool. In a project without one, Python with the standard library, or a POSIX `sh` script when the tool only strings other commands together and stays under about 30 lines. Bash only through `writeShellApplication`, so its dependencies and `set -euo pipefail` are explicit.
 - **A pure core and a thin shell:** parsing, deciding and formatting are functions over values; reading files, running commands, printing and exiting happen in a few shell functions around them. For Python, `python-hygiene-functional-style` gives the rules.
@@ -75,6 +75,7 @@ missing and ask whether to install it from the same collection this skill
 came from; don't apply it from memory.
 
 - `coding-agent-scratchpad-scripts`: what the scratchpad may hold and how its files are named, one-off checks run inline, edits through the edit tools, and never `source` a generated file.
+- `shell-hygiene-long-options`: a command written into a script, document, skill or commit message, the tool's own options among them, uses each option's long form.
 - `nix-flakes`: the dev shell's command discipline: categories, `help`, sorting, scripts in their own files.
 - `python-hygiene-functional-style`: the pure core and thin shell, for a tool written in Python.
 - `coding-agent-skill-references`: the preferences files this skill reads.
