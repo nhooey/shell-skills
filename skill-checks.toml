@@ -1,0 +1,2 @@
+[description]
+trigger-first = ["shell-hygiene-commands-as-cli-tools", "shell-hygiene-delete-named-paths", "shell-hygiene-long-options", "shell-hygiene-secrets-through-secretspec"]

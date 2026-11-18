@@ -1,6 +1,6 @@
 ---
 name: shell-hygiene-secrets-through-secretspec
-description: Read every secret a command needs (a token, API key or password) through SecretSpec at the moment of use, with a reason, `secretspec get --reason "…" KEY` into one process's environment or `secretspec run`, and never write it to a file, a `.env`, the dev shell, a command's arguments, a log or the reply, or fetch it another way when SecretSpec fails. Covers when a checkout needs a `secretspec.toml` and when the user's general `gh` token is enough, writing one (a least-privilege token per profile, write access never cached, 1Password items by ID with their titles in the description, the user-global provider aliases that keep the vault out of every project, the user creating every credential, an SSH key loaded into a throwaway ssh-agent), and what to do when a read is refused or 1Password doesn't answer. Use whenever a command, script or project needs a credential, a checkout has a `secretspec.toml`, a secret is about to go into an environment variable, file or dev shell, or a `secretspec` read fails.
+description: Load whenever a command, script or project needs a token, API key, password or SSH key, a checkout has a `secretspec.toml`, a secret is about to go into an environment variable, file or dev shell, or a `secretspec` read fails. Reads each secret through SecretSpec with a reason, at the moment of use, never writes it down and never fetches it another way.
 tags: [safety]
 allowed-tools:
   - Bash

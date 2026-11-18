@@ -1,6 +1,6 @@
 ---
 name: shell-hygiene-commands-as-cli-tools
-description: Turn every command a project's agents and people run more than once into a documented command-line tool committed in the project, with command tokens, options and `--help`, a pure core with a thin shell, and tests, wired into the Nix dev shell as one command per entry point where the project uses Nix. Keeps that work out of the scratchpad, out of pasted pipelines and out of recipes in READMEs, AGENTS.md and skills, which name the command instead. Covers when a one-liner may stay inline, growing an existing tool rather than adding a script beside it, the tool's language, its layout and exit codes, and the dev shell entry. Use before writing a script or a multi-step shell command you or anyone will run again, before writing a recipe into documentation, when a scratchpad file is about to be run a second time, and when reviewing a repository's scripts, Makefile targets, dev shell commands or documented recipes.
+description: Load before writing a script or multi-step command anyone will run again, before writing a recipe into a README, AGENTS.md or skill, when a scratchpad file is about to run a second time, and when reviewing a repository's scripts, Makefile targets or documented recipes. Turns repeated commands into a documented, tested project tool that READMEs and skills name instead.
 ---
 
 # Commands as command-line tools

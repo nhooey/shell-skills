@@ -1,6 +1,6 @@
 ---
 name: shell-hygiene-long-options
-description: Write the long form of each option, `rm --recursive --force`, `curl --silent --show-error --location`, not `-rf` or `-sSL`, in every command written down for a later reader, in a script, Makefile, CI file, document, skill, commit message or a command suggested to the user, so the reader sees what it does; a one-off command typed in a session is exempt. Covers checking that the tool which runs has the long form, keeping the short option where it has none, as macOS's BSD `rm`, `cp`, `mv`, `ls`, `sed` and `find` don't, writing a repository script against the dev shell's GNU tool where it runs under one, and tools a repository writes taking long options only. Use whenever writing a command into a file, a commit message or a reply someone will reuse, or reviewing one.
+description: Load when writing a command into a script, Makefile, CI file, document, skill, commit message, pull request or a reply someone will reuse, or when reviewing one. Writes each option's long form where the tool that runs has one, and names the macOS BSD tools that lack them. A one-off command typed in a session is exempt.
 tags: [style]
 allowed-tools:
   - Bash
