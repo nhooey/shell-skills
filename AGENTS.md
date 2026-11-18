@@ -19,9 +19,7 @@ command path).
   (`tools/rulebook.py`), with `nix` as a transparent wrapper as the checks
   run them. Add a fixture to the rulebook's `tests` for each rule,
   `block_args` or `any_args` entry you add.
-- `nix flake check`: the treefmt check, a build of every skill package,
-  `skill-citations verify` for each skill with a `citations.lock.json`,
-  `rulebook test`, and `rulebook`'s unit tests in `tests/`.
+- `nix flake check`: the treefmt check, a build of every skill package, `skill-citations verify` for each skill with a `citations.lock.json`, `rulebook test`, `rulebook`'s unit tests in `tests/`, and on macOS a build of each command in `commands/`, which runs its tests.
 - `skill-checks.toml`: read by agent-skill-flake's `skill-description`
   check. The skills in its `trigger-first` list under `[description]`
   open their description on "Load" and keep it within 500 characters.

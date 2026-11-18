@@ -3,6 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Only for terminal-notifier: 3.1.0 is arm64, where the 2.0.0 in
+    # `nixpkgs` runs under Rosetta. A separate pin moves nothing else.
+    nixpkgs-terminal-notifier.url = "github:NixOS/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -124,9 +127,34 @@
               exec python3 ${./tools/rulebook.py} --plugin ${inputs.cc-safety-net} "$@"
             '';
           };
+          inherit (inputs.nixpkgs-terminal-notifier.legacyPackages.${system}) terminal-notifier;
+          # macOS-only commands. Building one runs its tests, so each is a
+          # check as well as a package.
+          darwinCommands = lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+            onepassword-dialog-watcher = pkgs.callPackage ./commands/onepassword-dialog-watcher/package.nix {
+              inherit terminal-notifier;
+            };
+          };
+          # On Apple silicon, every Mach-O executable the watcher runs from
+          # the store, itself and terminal-notifier, has an arm64 slice.
+          appleSiliconChecks =
+            lib.optionalAttrs (pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64)
+              {
+                onepassword-dialog-watcher-native-arm64 =
+                  pkgs.runCommand "onepassword-dialog-watcher-native-arm64"
+                    {
+                      nativeBuildInputs = [
+                        pkgs.cctools
+                        pkgs.file
+                      ];
+                      watcher = darwinCommands.onepassword-dialog-watcher;
+                      terminalNotifier = terminal-notifier;
+                    }
+                    (builtins.readFile ./commands/onepassword-dialog-watcher/check-native-arm64.sh);
+              };
         in
         {
-          packages = base.packages.${system};
+          packages = base.packages.${system} // darwinCommands;
 
           apps = base.apps.${system} // {
             inherit (inputs.skill-authoring-skills.apps.${system}) skill-citations;
@@ -137,13 +165,17 @@
           # (`default` is the aggregate under another name), each CC Safety
           # Net rulebook's own `tests` fixtures run through the plugin's hook
           # by `rulebook test` with `nix` as a transparent wrapper, as the
-          # README recommends, and that tool's unit tests.
+          # README recommends, that tool's unit tests, on macOS each
+          # command's build, which runs its tests, and on Apple silicon that
+          # the watcher runs no x86_64-only binary.
           checks =
             inputs.skill-authoring-skills.lib.citationChecks {
               inherit pkgs;
               root = ./.;
             }
             // removeAttrs base.packages.${system} [ "default" ]
+            // darwinCommands
+            // appleSiliconChecks
             // lib.genAttrs' [ "shell-hygiene" "shell-hygiene-secrets" ] (
               name:
               lib.nameValuePair "cc-safety-net-rulebook-${name}" (
