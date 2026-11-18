@@ -1,14 +1,20 @@
 {
   "rulebook_version": 1,
   "name": "shell-hygiene",
-  "version": "1.1.0",
-  "description": "Blocks shell commands that reach past what the agent started or created: processes by pattern, and machine-wide installs, prunes, services and settings; and common numeric `chmod` modes, and `op read` and `gh auth token`, which print a secret into the session. Complements CC Safety Net's built-in rm and find rules. The why and the alternatives live in the shell-hygiene-* skills in nhooey/shell-skills. A rule whose block_args holds the command's own name blocks every call to it. Gaps: `sudo` is analyzed as a wrapper and can't be blocked here, `kill $(pgrep -f ...)` isn't caught, and `rm -rf \"$DIR\"/` with an empty variable is left to the skill.",
+  "version": "1.2.0",
+  "description": "Blocks shell commands that reach past what the agent started or created: processes by pattern, and machine-wide installs, prunes, services and settings; common numeric `chmod` modes, and `op read` and `gh auth token`, which print a secret into the session; and `sed -i` / `-I` / `--in-place`, `gsed -i`, `perl -i`, `ruby -i` and `gawk -i inplace`, which edit files in place where the Edit or Write tool should. Complements CC Safety Net's built-in rm and find rules. The why and the alternatives live in the shell-hygiene-* skills in nhooey/shell-skills. A rule whose block_args holds the command's own name blocks every call to it. Gaps: `sudo` is analyzed as a wrapper and can't be blocked here, `kill $(pgrep -f ...)` isn't caught, and `rm -rf \"$DIR\"/` with an empty variable is left to the skill. The in-place rules apply in every directory, since a rule can't see the working directory or whether it is a git worktree, and can't tell a tracked file from one under `/tmp`: `sed -i` on `/tmp/x` is blocked too. They over-block: every argument before `--` that starts with one `-` counts as short-option letters, so `perl -Mstrict`, `perl -Ilib`, `ruby -rdigest` and a script argument such as `perl x.pl -input` are blocked; and CC Safety Net checks a command run by `xargs` against every rule's flags, so `xargs sed -n 1p` is blocked as `sed-in-place`. Known misses, kept as `allowed` fixtures: `sed --in-place=SUFFIX`, since a rule matches whole arguments; `perl -0pi`, since letters after a digit aren't read as options; `sed -i` in a heredoc fed to a shell, which CC Safety Net reads from 2.7 on when the heredoc has no expansion; and a write by a `python3`, `node` or `ruby` script, a redirect or `tee`, since a rule sees neither what a script does nor whether a path is tracked.",
   "author": "nhooey/shell-skills",
   "allowed_commands": [
     "pkill",
     "killall",
     "xargs",
     "rsync",
+    "sed",
+    "gsed",
+    "perl",
+    "ruby",
+    "gawk",
+    "awk",
     "chmod",
     "chown",
     "brew",
@@ -58,6 +64,69 @@
       ],
       "reason": "Deletes every file in the destination that isn't in the source. Sync into a fresh directory, or ask the user after showing them `rsync -n --delete`'s list.",
       "intent": "manual_only"
+    },
+    {
+      "name": "sed-in-place",
+      "command": "sed",
+      "block_args": [
+        "-i",
+        "-I",
+        "--in-place",
+        "--i",
+        "--in",
+        "--in-",
+        "--in-p",
+        "--in-pl",
+        "--in-pla",
+        "--in-plac"
+      ],
+      "reason": "Edits files in place from the shell. Change files with the Edit or Write tool. Reaching the same result another way, such as another command, a script or a redirect, is forbidden.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "gsed-in-place",
+      "command": "gsed",
+      "block_args": [
+        "-i",
+        "--in-place",
+        "--i",
+        "--in",
+        "--in-",
+        "--in-p",
+        "--in-pl",
+        "--in-pla",
+        "--in-plac"
+      ],
+      "reason": "Edits files in place from the shell. Change files with the Edit or Write tool. Reaching the same result another way, such as another command, a script or a redirect, is forbidden.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "perl-in-place",
+      "command": "perl",
+      "block_args": ["-i"],
+      "reason": "Edits files in place from the shell. Change files with the Edit or Write tool. Reaching the same result another way, such as another command, a script or a redirect, is forbidden.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "ruby-in-place",
+      "command": "ruby",
+      "block_args": ["-i"],
+      "reason": "Edits files in place from the shell. Change files with the Edit or Write tool. Reaching the same result another way, such as another command, a script or a redirect, is forbidden.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "gawk-in-place",
+      "command": "gawk",
+      "block_args": ["inplace", "-iinplace", "--include=inplace"],
+      "reason": "Edits files in place from the shell. Change files with the Edit or Write tool. Reaching the same result another way, such as another command, a script or a redirect, is forbidden.",
+      "intent": "use_alternative"
+    },
+    {
+      "name": "awk-in-place",
+      "command": "awk",
+      "block_args": ["inplace", "-iinplace", "--include=inplace"],
+      "reason": "Edits files in place from the shell. Change files with the Edit or Write tool. Reaching the same result another way, such as another command, a script or a redirect, is forbidden.",
+      "intent": "use_alternative"
     },
     {
       "name": "chmod-recursive",
@@ -250,6 +319,148 @@
       "rule": "rsync-delete"
     },
     { "command": "rsync -a src/ dst/", "expect": "allowed" },
+    {
+      "command": "sed -i 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "sed -i '' 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "sed -i.bak 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "sed -E -ni 's/a/b/p' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "sed --in-place 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "sed -I '' 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "sed --in-pl 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "gsed --in-place 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "gsed-in-place"
+    },
+    {
+      "command": "gawk -i inplace '{ print }' README.md",
+      "expect": "blocked",
+      "rule": "gawk-in-place"
+    },
+    {
+      "command": "awk -i inplace '{ print }' README.md",
+      "expect": "blocked",
+      "rule": "awk-in-place"
+    },
+    {
+      "command": "git ls-files | xargs sed -n 1p",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "ruby -rdigest -e 'puts 1'",
+      "expect": "blocked",
+      "rule": "ruby-in-place"
+    },
+    {
+      "command": "/usr/bin/sed -i 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "sed -i 's/a/b/' /tmp/x.txt",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "bash -c \"sed -i 's/a/b/' README.md\"",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "git ls-files -z '*.md' | xargs -0 sed -i 's/a/b/'",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "find . -name '*.md' -exec sed -i 's/a/b/' {} +",
+      "expect": "blocked",
+      "rule": "sed-in-place"
+    },
+    {
+      "command": "gsed -i 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "gsed-in-place"
+    },
+    {
+      "command": "perl -pi -e 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "perl-in-place"
+    },
+    {
+      "command": "perl -i -pe 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "perl-in-place"
+    },
+    {
+      "command": "perl -0777 -i.bak -pe 's/a/b/' README.md",
+      "expect": "blocked",
+      "rule": "perl-in-place"
+    },
+    {
+      "command": "ruby -pi -e 'sub(/a/, \"b\")' README.md",
+      "expect": "blocked",
+      "rule": "ruby-in-place"
+    },
+    {
+      "command": "perl -Mstrict -Ilib -e 'print 1'",
+      "expect": "blocked",
+      "rule": "perl-in-place"
+    },
+    { "command": "sed 's/a/b/' README.md", "expect": "allowed" },
+    { "command": "sed -n '1,20p' README.md", "expect": "allowed" },
+    { "command": "sed -E -e 's/-i/x/' README.md", "expect": "allowed" },
+    { "command": "perl -ne 'print if /a/' README.md", "expect": "allowed" },
+    { "command": "ruby -e 'puts 1'", "expect": "allowed" },
+    { "command": "awk '{ print $1 }' README.md", "expect": "allowed" },
+    {
+      "command": "perl -0pi -e 's/a/b/' README.md",
+      "expect": "allowed"
+    },
+    { "command": "nix fmt", "expect": "allowed" },
+    { "command": "treefmt", "expect": "allowed" },
+    { "command": "git commit -m 'Edit README.md'", "expect": "allowed" },
+    {
+      "command": "sed --in-place=.bak 's/a/b/' README.md",
+      "expect": "allowed"
+    },
+    {
+      "command": "python3 -c \"open('README.md', 'w').write('x')\"",
+      "expect": "allowed"
+    },
+    { "command": "echo x > README.md", "expect": "allowed" },
+    { "command": "echo x | tee README.md", "expect": "allowed" },
+    {
+      "command": "bash <<'EOF'\nsed -i 's/a/b/' README.md\nEOF",
+      "expect": "allowed"
+    },
     {
       "command": "chmod -R 755 .",
       "expect": "blocked",
