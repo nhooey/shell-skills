@@ -211,12 +211,29 @@
         "type": "github"
       }
     },
+    "nixpkgs-terminal-notifier": {
+      "locked": {
+        "lastModified": 1794890597,
+        "narHash": "sha256-lME2lHoDHAaSHP3/okgiVoJ0icVEvsQH8LeU3We7tcc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agent-skill-flake": "agent-skill-flake",
         "cc-safety-net": "cc-safety-net",
         "flake-parts": "flake-parts_2",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-terminal-notifier": "nixpkgs-terminal-notifier",
         "skill-authoring-skills": "skill-authoring-skills",
         "systems": "systems_4",
         "treefmt-nix": "treefmt-nix_3"

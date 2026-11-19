@@ -1,6 +1,6 @@
 ---
 name: shell-hygiene-delete-named-paths
-description: Delete only the paths you created, by name, after listing what will go. No deleting by glob, unchecked variable or whole tree: no `rm -rf "$DIR"/` with `$DIR` possibly empty, `rm -rf *`, `rm -rf ~/...`, `find ... -delete` or `-exec rm` without a listing first, `rsync --delete` into a directory you didn't create, or `mv`, `cp` or `>` over a file already there. Covers the narrower command for each, keeping temporary files in the session's scratch directory, and showing the user a broad delete before running it. Use whenever about to remove, overwrite or move files or directories.
+description: Load before removing, overwriting or moving files or directories, such as with `rm`, `find -delete`, `rsync --delete`, `mv`, `cp` or `>`, or cleaning up after a task. Deletes named paths only, after a listing, never by glob or unchecked variable. Also load `macos-hygiene-trash-for-ad-hoc-deletes` for an ad-hoc delete on macOS and `git-hygiene-avoid-sweeping-operations` for deletes git makes.
 tags: [safety]
 allowed-tools:
   - Bash
@@ -56,8 +56,8 @@ around it.
 
 ## When to apply
 
-- About to run `rm`, `find -delete`, `rsync --delete`, or `mv` / `cp` onto
-  an existing path.
+- About to run `rm`, `find -delete`, `rsync --delete`, or `mv`, `cp` or
+  `>` onto an existing path.
 - Cleaning up at the end of a task.
 - Any delete whose path comes from a variable, a glob or a command's
   output.

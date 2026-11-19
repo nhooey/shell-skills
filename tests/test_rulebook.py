@@ -53,6 +53,29 @@ class ParseArgs(unittest.TestCase):
         args = rulebook.parse_args(["--plugin", "pinned", "test"])
         self.assertEqual((args.plugin, args.rulebooks), ("pinned", []))
 
+    def test_no_transparent_wrapper_by_default(self):
+        self.assertEqual(
+            rulebook.parse_args(["--plugin", "p", "test"]).transparent_wrappers, []
+        )
+
+    def test_transparent_wrapper_repeats(self):
+        args = rulebook.parse_args(
+            [
+                "--plugin",
+                "p",
+                "test",
+                "--transparent-wrapper",
+                "nix",
+                "--transparent-wrapper",
+                "direnv",
+                "a.json",
+            ]
+        )
+        self.assertEqual(
+            (args.transparent_wrappers, args.rulebooks),
+            (["nix", "direnv"], ["a.json"]),
+        )
+
     def usage_error(self, argv):
         with (
             contextlib.redirect_stderr(io.StringIO()),
@@ -151,6 +174,19 @@ class Failures(unittest.TestCase):
         self.assertEqual(
             rulebook.failures({"name": "empty", "rules": []}, []),
             ["empty has no tests"],
+        )
+
+
+class Config(unittest.TestCase):
+    def test_loads_the_rulebook_without_wrappers(self):
+        self.assertEqual(
+            rulebook.config("hygiene", []), {"version": 1, "rules": ["hygiene"]}
+        )
+
+    def test_lists_transparent_wrappers(self):
+        self.assertEqual(
+            rulebook.config("hygiene", ["nix"]),
+            {"version": 1, "rules": ["hygiene"], "transparent_wrappers": ["nix"]},
         )
 
 

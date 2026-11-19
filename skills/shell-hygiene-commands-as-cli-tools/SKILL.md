@@ -1,6 +1,6 @@
 ---
 name: shell-hygiene-commands-as-cli-tools
-description: Turn every command a project's agents and people run more than once into a documented command-line tool committed in the project, with command tokens, options and `--help`, a pure core with a thin shell, and tests, wired into the Nix dev shell as one command per entry point where the project uses Nix. Keeps that work out of the scratchpad, out of pasted pipelines and out of recipes in READMEs, AGENTS.md and skills, which name the command instead. Covers when a one-liner may stay inline, growing an existing tool rather than adding a script beside it, the tool's language, its layout and exit codes, and the dev shell entry. Use before writing a script or a multi-step shell command you or anyone will run again, before writing a recipe into documentation, when a scratchpad file is about to be run a second time, and when reviewing a repository's scripts, Makefile targets, dev shell commands or documented recipes.
+description: Load before writing a script or multi-step command anyone will run again, before writing a recipe into a README, AGENTS.md or skill, when a scratchpad file is about to run a second time, and when reviewing a repository's scripts, Makefile targets or documented recipes. Turns repeated commands into a documented, tested project tool that READMEs and skills name instead.
 ---
 
 # Commands as command-line tools
@@ -18,7 +18,7 @@ A single command a reader understands at a glance (`git log --oneline -5`, `nix 
 
 ## The tool's shape
 
-- **Commands and options:** one executable per area of the project, with command tokens for its jobs (`tool prepare`, `tool run`, `tool report`) and named options for every choice (`--parallel 2`, `--dry-run`). Positional arguments only for the thing acted on. No behaviour hidden in environment variables a reader can't see in `--help`.
+- **Commands and options:** one executable per area of the project, with command tokens for its jobs (`tool prepare`, `tool run`, `tool report`) and named long options for every choice (`--parallel 2`, `--dry-run`), with no one-letter aliases, as `shell-hygiene-long-options` says. Positional arguments only for the thing acted on. No behaviour hidden in environment variables a reader can't see in `--help`.
 - **`--help` at every level:** the tool and each command say what they do, their arguments and an example. The module's docstring, or the script's header, says the same.
 - **Language:** the project's own language, so its tests, formatter and linters cover the tool. In a project without one, Python with the standard library, or a POSIX `sh` script when the tool only strings other commands together and stays under about 30 lines. Bash only through `writeShellApplication`, so its dependencies and `set -euo pipefail` are explicit.
 - **A pure core and a thin shell:** parsing, deciding and formatting are functions over values; reading files, running commands, printing and exiting happen in a few shell functions around them. For Python, `python-hygiene-functional-style` gives the rules.
@@ -75,6 +75,7 @@ missing and ask whether to install it from the same collection this skill
 came from; don't apply it from memory.
 
 - `coding-agent-scratchpad-scripts`: what the scratchpad may hold and how its files are named, one-off checks run inline, edits through the edit tools, and never `source` a generated file.
+- `shell-hygiene-long-options`: a command written into a script, document, skill or commit message, the tool's own options among them, uses each option's long form.
 - `nix-flakes`: the dev shell's command discipline: categories, `help`, sorting, scripts in their own files.
 - `python-hygiene-functional-style`: the pure core and thin shell, for a tool written in Python.
 - `coding-agent-skill-references`: the preferences files this skill reads.
